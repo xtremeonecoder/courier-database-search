@@ -1,0 +1,66 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+?>
+
+<?php 
+$apiKey = $this->apiKey; 
+$direction = $this->direction; 
+
+// auto google map css
+$this->headLink()
+          ->appendStylesheet("https://developers.google.com/maps/documentation/javascript/examples/default.css", 'screen', true, array('charset'=>"utf-8"));
+
+// auto google map js
+$this->headScript()
+          ->appendFile("https://maps.googleapis.com/maps/api/js?key={$apiKey}");
+?>
+
+<script type="text/javascript">
+    var $directionsDisplay;
+    var $directionsService = new google.maps.DirectionsService();
+    var $map;
+
+    function initialize() {
+        $directionsDisplay = new google.maps.DirectionsRenderer();
+        //var chicago = new google.maps.LatLng(41.850033, -87.6500523);
+        var $mapOptions = {
+            zoom: 7,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+            //center: chicago
+        }
+        $map = new google.maps.Map(document.getElementById('map-canvas'), $mapOptions);
+        $directionsDisplay.setMap($map);
+        calcRoute('<?php echo $direction['sourcepc'] ?>', '<?php echo $direction['destinpc'] ?>');
+    }
+
+    function calcRoute($start, $end) {
+        //var $start = document.getElementById('start').value;
+        //var $end = document.getElementById('end').value;
+        var $request = {
+            origin: $start,
+            destination: $end,
+            travelMode: google.maps.DirectionsTravelMode.DRIVING
+        };
+        $directionsService.route($request, function($response, $status){
+            if($status == google.maps.DirectionsStatus.OK){
+                $directionsDisplay.setDirections($response);
+            }
+        });
+    }
+
+    google.maps.event.addDomListener(window, 'load', initialize);
+</script>
+
+<div id="map-canvas" style="width: 270px; height: 270px;"></div>

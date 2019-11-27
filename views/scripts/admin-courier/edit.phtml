@@ -1,0 +1,411 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+
+$company = $this->company;
+
+// auto suggest css
+$this->headLink()
+          ->appendStylesheet("{$this->baseUrl()}/public/js/autosuggest/css/autosuggest_inquisitor.css", 'screen', true, array('charset'=>"utf-8"));
+
+// auto suggest js
+$this->headScript()
+          ->appendFile("{$this->baseUrl()}/public/js/autosuggest/js/bsn.AutoSuggest_2.1.3_comp.js");
+?>
+
+<?php
+$menu = array('menu' => 'admin_top_menu');
+echo $this->topMenuWidget(array('headtitle' => 'Admin', 'menu' => $menu));
+?>
+
+<div id="formholder">
+    <h4>
+        <i class="icon-home" style="vertical-align:middle; margin-top: -2px;"></i>
+        <?php echo $this->translate('Admin Panel [Edit Contact of %s]', $company->getTitle()); ?>
+    </h4>
+
+    <div style="clear: both;"><br /></div>
+
+    <div class="span add-company-form" style="margin-left: 0px;">
+        <?php echo $this->form->render($this); ?>
+    </div>
+    <div style="clear: both;"></div>
+</div>
+    
+<script type="text/javascript">
+    var $options = {
+        script: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'get-town-list'), 'default', true); ?>?json=true&limit=6&",
+        varname: "input",
+        json: true,
+        shownoresults: false,
+        maxresults: 6,
+        callback: function ($obj) {
+            $('#city').val($obj.id);
+            
+            var $request = $.ajax({
+                url: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'get-town-details'), 'default', true); ?>",
+                type: "GET",
+                data: {id : $obj.id},
+                dataType: "json"
+            });
+            $request.done(function($result) {
+                if($result.status == 'success'){
+                    $('#county').val($result.countyid);
+                    $('#country').val($result.countryid);
+                    $('#county_name').val($result.countyname);
+                    $('#country_name').val($result.countryname);
+                }else{
+                    alert("<?php echo $this->translate('Request failed, something went wrong!'); ?>");
+                }
+            });
+            $request.fail(function(jqXHR, textStatus) {
+                alert("<?php echo $this->translate('Request failed: '); ?>" + textStatus);
+            });
+        }
+    };
+    var as_json = new bsn.AutoSuggest('city_name', $options);
+
+    // add icon
+    $('#submit').prepend("<i class='icon-edit icon-white'></i> ");
+    
+    // email validation
+    $('#email').blur(function(){
+        var $emailValidationRequest = $.ajax({
+            url: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'validate-email'), 'default', true); ?>",
+            type: "GET",
+            data: {
+                edit: true,
+                email : $(this).val()
+            },
+            dataType: "json",
+            beforeSend: function ( jqXHR ) {
+                $('#email').nextAll().remove();
+                var $loadingImage = $("<img src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/loading.gif' />");
+                //$('#email-element').append($loadingImage);
+                $loadingImage.insertAfter($('#email'));
+            }
+        });
+        $emailValidationRequest.done(function($result) {
+            $('#email').nextAll().remove();
+            if($result.status == 'success'){
+                var $loadingImage = $("<img title='<?php echo $this->translate('Valid Email'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/tick.png' />");
+                $('#email-element').append($loadingImage);
+            }else{
+                if($result.error == 'error'){
+                    var $loadingImage = $(
+                        "<img title='<?php echo $this->translate('Invalid Email'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />" +
+                        "<ul class='errors'><li><?php echo $this->translate('This email has already been registered!'); ?></li></ul>"
+                    );
+                }else{
+                    var $loadingImage = $("<img title='<?php echo $this->translate('Invalid Email'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />");
+                }
+                $('#email-element').append($loadingImage);
+            }
+        });
+        $emailValidationRequest.fail(function(jqXHR, textStatus) {
+            $('#email').nextAll().remove();
+            var $loadingImage = $("<img title='<?php echo $this->translate('Invalid Email'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />");
+            $('#email-element').append($loadingImage);
+        });
+    });
+    
+    // post code validation
+    $('#postcode').blur(function(){
+        var $pcValidationRequest = $.ajax({
+            url: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'validate-post-code'), 'default', true); ?>",
+            type: "GET",
+            data: {postcode : $(this).val()},
+            dataType: "json",
+            beforeSend: function ( jqXHR ) {
+                $('#postcode').nextAll().remove();
+                var $loadingImage = $("<img src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/loading.gif' />");
+                //$('#postcode-element').append($loadingImage);
+                $loadingImage.insertAfter($('#postcode'));
+            }
+        });
+        $pcValidationRequest.done(function($result) {
+            $('#postcode').nextAll().remove();
+            if($result.status == 'success'){
+                var $loadingImage = $("<img title='<?php echo $this->translate('Valid Post Code'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/tick.png' />");
+                $('#postcode-element').append($loadingImage);
+            }else{
+                var $loadingImage = $(
+                    "<img title='<?php echo $this->translate('Invalid Post Code'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />" +
+                    "<ul class='errors'><li><?php echo $this->translate('This post code is invalid!'); ?></li></ul>"
+                );
+                $('#postcode-element').append($loadingImage);
+            }
+        });
+        $pcValidationRequest.fail(function(jqXHR, textStatus) {
+            $('#postcode').nextAll().remove();
+            var $loadingImage = $(
+                "<img title='<?php echo $this->translate('Invalid Post Code'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />" +
+                "<ul class='errors'><li><?php echo $this->translate('Server requesting problem, please try again!'); ?></li></ul>"
+            );
+            $('#postcode-element').append($loadingImage);
+        });
+    });
+    
+    // website validation
+    $('#website').blur(function(){
+        var $websiteValidationRequest = $.ajax({
+            url: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'validate-website'), 'default', true); ?>",
+            type: "GET",
+            data: {website : $(this).val()},
+            dataType: "json",
+            beforeSend: function ( jqXHR ) {
+                $('#website').nextAll().remove();
+                var $loadingImage = $("<img src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/loading.gif' />");
+                //$('#website-element').append($loadingImage);
+                $loadingImage.insertAfter($('#website'));
+            }
+        });
+        $websiteValidationRequest.done(function($result) {
+            $('#website').nextAll().remove();
+            if($result.status == 'success'){
+                var $loadingImage = $("<img title='<?php echo $this->translate('Valid Website'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/tick.png' />");
+                $('#website-element').append($loadingImage);
+            }else{
+                var $loadingImage = $(
+                    "<img title='<?php echo $this->translate('Invalid Website'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />" +
+                    "<ul class='errors'><li><?php echo $this->translate('This website address is invalid!'); ?></li></ul>"
+                );
+                $('#website-element').append($loadingImage);
+            }
+        });
+        $websiteValidationRequest.fail(function(jqXHR, textStatus) {
+            $('#website').nextAll().remove();
+            var $loadingImage = $(
+                "<img title='<?php echo $this->translate('Invalid Website'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />" +
+                "<ul class='errors'><li><?php echo $this->translate('Server requesting problem, please try again!'); ?></li></ul>"
+            );
+            $('#website-element').append($loadingImage);
+        });
+    });        
+    
+    // mobile number validation
+    $('#mobile_no').blur(function(){
+//        if($(this).val() == ''){
+//            return false;
+//        }
+        var $mobileValidationRequest = $.ajax({
+            url: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'validate-mobile-number'), 'default', true); ?>",
+            type: "GET",
+            data: {mobile : $(this).val()},
+            dataType: "json",
+            beforeSend: function ( jqXHR ) {
+                $('#mobile_no').nextAll().remove();
+                var $loadingImage = $("<img src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/loading.gif' />");
+                //$('#mobile_no-element').append($loadingImage);
+                $loadingImage.insertAfter($('#mobile_no'));
+            }
+        });
+        $mobileValidationRequest.done(function($result) {
+            $('#mobile_no').nextAll().remove();
+            if($result.status == 'success'){
+                var $loadingImage = $("<img title='<?php echo $this->translate('Valid Mobile Number'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/tick.png' />");
+                $('#mobile_no-element').append($loadingImage);
+            }else{
+                var $loadingImage = $(
+                    "<img title='<?php echo $this->translate('Invalid Mobile Number'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />" +
+                    "<ul class='errors'><li><?php echo $this->translate('This mobile number is invalid!'); ?></li></ul>"
+                );
+                $('#mobile_no-element').append($loadingImage);
+            }
+        });
+        $mobileValidationRequest.fail(function(jqXHR, textStatus) {
+            $('#mobile_no').nextAll().remove();
+            var $loadingImage = $(
+                "<img title='<?php echo $this->translate('Invalid Mobile Number'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />" +
+                "<ul class='errors'><li><?php echo $this->translate('Server requesting problem, please try again!'); ?></li></ul>"
+            );
+            $('#mobile_no-element').append($loadingImage);
+        });
+    });    
+    
+    // phone number validation
+    $('#phone_no').blur(function(){
+        var $phoneValidationRequest = $.ajax({
+            url: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'validate-phone-number'), 'default', true); ?>",
+            type: "GET",
+            data: {phone : $(this).val()},
+            dataType: "json",
+            beforeSend: function ( jqXHR ) {
+                $('#phone_no').nextAll().remove();
+                var $loadingImage = $("<img src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/loading.gif' />");
+                //$('#phone_no-element').append($loadingImage);
+                $loadingImage.insertAfter($('#phone_no'));
+            }
+        });
+        $phoneValidationRequest.done(function($result) {
+            $('#phone_no').nextAll().remove();
+            if($result.status == 'success'){
+                var $loadingImage = $("<img title='<?php echo $this->translate('Valid Phone Number'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/tick.png' />");
+                $('#phone_no-element').append($loadingImage);
+            }else{
+                var $loadingImage = $(
+                    "<img title='<?php echo $this->translate('Invalid Phone Number'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />" +
+                    "<ul class='errors'><li><?php echo $this->translate('This phone number is invalid!'); ?></li></ul>"
+                );
+                $('#phone_no-element').append($loadingImage);
+            }
+        });
+        $phoneValidationRequest.fail(function(jqXHR, textStatus) {
+            $('#phone_no').nextAll().remove();
+            var $loadingImage = $(
+                "<img title='<?php echo $this->translate('Invalid Phone Number'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />" +
+                "<ul class='errors'><li><?php echo $this->translate('Server requesting problem, please try again!'); ?></li></ul>"
+            );
+            $('#phone_no-element').append($loadingImage);
+        });
+    });        
+    
+    // company name validation
+    $('#company_name').blur(function(){
+        var $companyValidationRequest = $.ajax({
+            url: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'validate-company-name'), 'default', true); ?>",
+            type: "GET",
+            data: {company : $(this).val()},
+            dataType: "json",
+            beforeSend: function ( jqXHR ) {
+                $('#company_name').nextAll().remove();
+                var $loadingImage = $("<img src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/loading.gif' />");
+                //$('#company_name-element').append($loadingImage);
+                $loadingImage.insertAfter($('#company_name'));
+            }
+        });
+        $companyValidationRequest.done(function($result) {
+            $('#company_name').nextAll().remove();
+            if($result.status == 'success'){
+                var $loadingImage = $("<img title='<?php echo $this->translate('Valid Company Name'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/tick.png' />");
+                $('#company_name-element').append($loadingImage);
+            }else{
+                var $loadingImage = $(
+                    "<img title='<?php echo $this->translate('Invalid Company Name'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />" +
+                    "<ul class='errors'><li><?php echo $this->translate('Company name field is required!'); ?></li></ul>"
+                );
+                $('#company_name-element').append($loadingImage);
+            }
+        });
+        $companyValidationRequest.fail(function(jqXHR, textStatus) {
+            $('#company_name').nextAll().remove();
+            var $loadingImage = $(
+                "<img title='<?php echo $this->translate('Invalid Company Name'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />" +
+                "<ul class='errors'><li><?php echo $this->translate('Server requesting problem, please try again!'); ?></li></ul>"
+            );
+            $('#company_name-element').append($loadingImage);
+        });
+    });        
+
+    // contact name validation
+    $('#contact_name').blur(function(){
+        var $contactValidationRequest = $.ajax({
+            url: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'validate-contact-name'), 'default', true); ?>",
+            type: "GET",
+            data: {contact : $(this).val()},
+            dataType: "json",
+            beforeSend: function ( jqXHR ) {
+                $('#contact_name').nextAll().remove();
+                var $loadingImage = $("<img src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/loading.gif' />");
+                //$('#contact_name-element').append($loadingImage);
+                $loadingImage.insertAfter($('#contact_name'));
+            }
+        });
+        $contactValidationRequest.done(function($result) {
+            $('#contact_name').nextAll().remove();
+            if($result.status == 'success'){
+                var $loadingImage = $("<img title='<?php echo $this->translate('Valid Contact Name'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/tick.png' />");
+                $('#contact_name-element').append($loadingImage);
+            }else{
+                var $loadingImage = $(
+                    "<img title='<?php echo $this->translate('Invalid Contact Name'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />" +
+                    "<ul class='errors'><li><?php echo $this->translate('Contact name field is required!'); ?></li></ul>"
+                );
+                $('#contact_name-element').append($loadingImage);
+            }
+        });
+        $contactValidationRequest.fail(function(jqXHR, textStatus) {
+            $('#contact_name').nextAll().remove();
+            var $loadingImage = $(
+                "<img title='<?php echo $this->translate('Invalid Contact Name'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />" +
+                "<ul class='errors'><li><?php echo $this->translate('Server requesting problem, please try again!'); ?></li></ul>"
+            );
+            $('#contact_name-element').append($loadingImage);
+        });
+    });        
+
+    // address validation
+    $('#address1').blur(function(){
+        var $addressValidationRequest = $.ajax({
+            url: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'validate-address'), 'default', true); ?>",
+            type: "GET",
+            data: {address : $(this).val()},
+            dataType: "json",
+            beforeSend: function ( jqXHR ) {
+                $('#address1').next().remove();
+                var $loadingImage = $("<img src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/loading.gif' />");
+                $('#address1-element').append($loadingImage);
+            }
+        });
+        $addressValidationRequest.done(function($result) {
+            $('#address1').next().remove();
+            if($result.status == 'success'){
+                var $loadingImage = $("<img title='<?php echo $this->translate('Valid Address'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/tick.png' />");
+                $('#address1-element').append($loadingImage);
+            }else{
+                var $loadingImage = $("<img title='<?php echo $this->translate('Invalid Address'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />");
+                $('#address1-element').append($loadingImage);
+            }
+        });
+        $addressValidationRequest.fail(function(jqXHR, textStatus) {
+            $('#address1').next().remove();
+            var $loadingImage = $("<img title='<?php echo $this->translate('Invalid Address'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />");
+            $('#address1-element').append($loadingImage);
+        });
+    });        
+
+    // city / town validation
+    $('#city_name').blur(function(){
+        var $cityValidationRequest = $.ajax({
+            url: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'validate-city-name'), 'default', true); ?>",
+            type: "GET",
+            data: {city : $(this).val()},
+            dataType: "json",
+            beforeSend: function ( jqXHR ) {
+                $('#city_name').nextAll().remove();
+                var $loadingImage = $("<img src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/loading.gif' />");
+                //$('#city_name').append($loadingImage);
+                $loadingImage.insertAfter($('#city_name'));
+            }
+        });
+        $cityValidationRequest.done(function($result) {
+            $('#city_name').nextAll().remove();
+            if($result.status == 'success'){
+                var $loadingImage = $("<img title='<?php echo $this->translate('Valid City Name'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/tick.png' />");
+                $('#city_name-element').append($loadingImage);
+            }else{
+                var $loadingImage = $(
+                    "<img title='<?php echo $this->translate('Invalid City Name'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />" +
+                    "<ul class='errors'><li><?php echo $this->translate('Please check spelling of Town/City as this does not exist.'); ?></li></ul>"
+                );
+                $('#city_name-element').append($loadingImage);
+            }
+        });
+        $cityValidationRequest.fail(function(jqXHR, textStatus) {
+            $('#city_name').nextAll().remove();
+            var $loadingImage = $("<img title='<?php echo $this->translate('Invalid City Name'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />");
+            $('#city_name-element').append($loadingImage);
+        });
+    });        
+</script>

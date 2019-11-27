@@ -1,0 +1,51 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+?>
+
+<?php $directionArray = $this->directionArray; ?>
+
+<div class="section current">
+    <div class="direction-map">
+        <?php echo $this->directionMapWidget($directionArray); ?>
+    </div>
+    <div class="delivery-charge">
+        <div class="div1"><?php echo $this->translate('Courier Database Search%1$s100&percnt; Money Back Guarantee', '<br />'); ?></div>
+        <br />
+        <div class="div2"><?php echo $this->translate('If you\'re not satisfied with%1$sthe delivery service then I will return%1$s100&percnt; of your money back to you.', '<br />'); ?></div>
+        <br />
+        <h2><?php echo "&pound;{$directionArray['distance']['charge']}"; ?></h2>
+        <br />
+        <div class="div3">
+            <button id="proceed"><?php echo $this->translate('Proceed with this delivery'); ?></button>
+        </div>
+    </div>
+    <div class="delivery-summary">
+        <h2><?php echo $this->translate('Delivery Summary'); ?></h2>
+        <div><?php echo $this->translate('From %1$s to %2$s distance %3$s miles approx', "<span>{$directionArray['sourcepc']}</span>", "<span>{$directionArray['destinpc']}</span>", "<span>{$directionArray['distance']['miles']}</span>"); ?></div>
+        <div><?php echo $this->translate('One man service. 15 minute waiting (loading/unloading) at each end.'); ?></div>
+        <div><?php echo $this->translate('Vehicle: %1$sVauxhall Combo (Small Van)%2$s', '<span>', '</span>'); ?></div>
+        <div><?php echo $this->translate('Parcel carrying capacity;'); ?></div>
+        <div><?php echo $this->translate('height: 114 cm, width: 106 cm, length: 150 cm, weight: 400 kgs'); ?></div>
+        <br />
+        <div><?php echo $this->translate('Goods In Transit Insurance upto &pound;25,000'); ?></div>
+        <div><?php echo $this->translate('Click %1$shere%2$s to download full insurance documents', "<a href='javascript:void(0)'>", "</a>"); ?></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$('#proceed').click(function(){
+    location.href = '<?php echo $this->url(array(), 'parcel_order', true); ?>';
+});
+</script>

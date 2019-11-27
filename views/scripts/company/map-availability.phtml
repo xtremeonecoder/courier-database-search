@@ -1,0 +1,44 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+
+$paginator = $this->paginator;
+?>
+
+<style type="text/css">
+    .comnav {margin-left: 0px;}
+    .comnav > li {float: left; list-style: none;}
+    .comnav > li.seperator {padding: 0px 5px 0px 5px;}
+    form#filter_form label {display: none;}
+    .toppaginator > .pagination {margin-top: 0px;}
+</style>
+
+<div>
+    <?php 
+        $menu = array('menu' => 'top_menu');
+        $notShow = array();
+        //$notShow = array('top_menu_courier_search');
+        echo $this->topMenuWidget(array('headtitle' => 'Map View', 'menu' => $menu, 'notshow' => $notShow));
+    ?>
+    
+    <div style="clear: both;"></div>
+    
+    <div class="span" style="margin-left: 0px;">
+        <?php echo $this->filterWidget(); ?>
+    </div>
+    
+    <div class="span" style="margin-left: 0px;">
+        <?php echo $this->courierAvailableMapWidget(); ?>
+    </div>
+</div>

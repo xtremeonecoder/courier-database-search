@@ -1,0 +1,34 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+
+$step = $this->step;
+?>
+
+<ul class="progress-steps">
+    <li style="padding-left: 0px;"><a href="javascript:void(0)"<?php if($step === 'captcha'){echo " class='processing'";} ?>><?php echo $this->translate('Captcha'); ?></a></li>
+    <li>&raquo;</li>
+    <li><a href="javascript:void(0)"<?php if($step === 'email'){echo " class='processing'";} ?>><?php echo $this->translate('Email'); ?></a></li>
+    <li>&raquo;</li>
+    <li><a href="javascript:void(0)"<?php if($step === 'contact'){echo " class='processing'";} ?>><?php echo $this->translate('Contact Details'); ?></a></li>
+    <li>&raquo;</li>
+    <li><a href="javascript:void(0)"<?php if($step === 'vehicles'){echo " class='processing'";} ?>><?php echo $this->translate('Vehicles'); ?></a></li>
+    <li>&raquo;</li>
+    <li><a href="javascript:void(0)"<?php if($step === 'insurance'){echo " class='processing'";} ?>><?php echo $this->translate('Insurance'); ?></a></li>
+    <li>&raquo;</li>
+    <li><a href="javascript:void(0)"<?php if($step === 'payment'){echo " class='processing'";} ?>><?php echo $this->translate('Payment Terms'); ?></a></li>
+    <li>&raquo;</li>
+    <li><a href="javascript:void(0)"<?php if($step === 'services'){echo " class='processing'";} ?>><?php echo $this->translate('Services'); ?></a></li>
+    <div style="clear: both;"></div>
+</ul>

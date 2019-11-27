@@ -1,0 +1,31 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+?>
+
+<div class="signup-step">
+    <h4>
+        <i class="icon-shopping-cart" style="vertical-align:middle; margin-top: -2px;"></i>
+        <?php echo $this->translate('Courier Registration'); ?>
+    </h4>
+    <div style="clear: both;"></div>
+    <?php echo $this->registrationProgressWidget('payment'); ?>
+    <div style="clear: both;"></div>
+    <?php echo $this->form->render($this); ?>
+</div>
+
+<script type="text/javascript">
+$('#dummy').html("<i class='icon-info-sign'></i> <?php echo $this->translate('You can add or amend these details later.') ?>");
+$('#submit').prepend("<i class='icon-circle-arrow-right icon-white'></i> ");
+</script>

@@ -1,0 +1,41 @@
+<?php
+/**
+ * ParcelDeliveryNetwork
+ *
+ * @category   Application_Core
+ * @package    PDN
+ * @author     ParcelDeliveryNetwork
+ * @developer  Aninda Barua <aninda.cse@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    PDN
+ */
+?>
+
+<div>
+    <div id="formholder">
+        <?php 
+            $menu = array('menu' => 'courier_top_menu');
+            echo $this->topMenuWidget(array('headtitle' => 'Courier', 'menu' => $menu));
+        ?>
+        <h4>
+            <i class="icon-home" style="vertical-align:middle; margin-top: -2px;"></i>
+            <?php echo $this->translate('Courier Panel [%s]', $this->viewer()->getTitle()); ?>
+        </h4>
+<!--        <ul>
+            <li>
+                <a href="<?php //echo $this->url(array(), 'company_list', true); ?>">
+                    <?php //echo $this->translate('Courier Company List'); ?>
+                </a>
+            </li>
+            <li>
+                <a href="<?php //echo $this->url(array(), 'member_logout', true); ?>">
+                    <?php //echo $this->translate('Logout'); ?>
+                </a>
+            </li>
+        </ul>-->
+        <div style="clear: both;"></div>
+    </div>
+</div>

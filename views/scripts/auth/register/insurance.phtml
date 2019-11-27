@@ -1,0 +1,114 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+
+// auto suggest css
+$this->headLink()
+          //->appendStylesheet("{$this->baseUrl()}/public/externals/datetimepicker/css/bootstrap-combined.min.css")
+          ->appendStylesheet("{$this->baseUrl()}/public/externals/datetimepicker/css/bootstrap-datetimepicker.min.css", 'screen', true, array('charset'=>"utf-8"));
+
+// auto suggest js
+$this->headScript()
+          //->appendFile("{$this->baseUrl()}/public/externals/datetimepicker/js/jquery.min.js")
+          //->appendFile("{$this->baseUrl()}/public/externals/datetimepicker/js/bootstrap.min.js")
+          ->appendFile("{$this->baseUrl()}/public/externals/datetimepicker/js/bootstrap-datetimepicker.min.js");
+?>
+
+<style type="text/css">
+    form#insurance_form ul.errors {display: none;}
+</style>
+
+<div class="signup-step">
+    <h4>
+        <i class="icon-shopping-cart" style="vertical-align:middle; margin-top: -2px;"></i>
+        <?php echo $this->translate('Courier Registration'); ?>
+    </h4>
+    <div style="clear: both;"></div>
+    <?php echo $this->registrationProgressWidget('insurance'); ?>
+    <div style="clear: both;"></div>
+    <?php echo $this->form->render($this); ?>
+</div>
+
+<script type="text/javascript">
+$('#dummy1').html('<?php echo $this->translate('Courier Insurance'); ?>');
+$('#dummy2').html('<?php echo $this->translate('Goods In Transit'); ?>');
+$('#dummy3').html('<?php echo $this->translate('Public Liability'); ?>');
+$('#dummy4').html("<i class='icon-info-sign'></i> <?php echo $this->translate('You can add or amend these details later.'); ?>");
+$('#datepicker1').html('<i data-date-icon="icon-calendar" data-time-icon="icon-time"></i>');
+$('#datepicker2').html('<i data-date-icon="icon-calendar" data-time-icon="icon-time"></i>');
+$('#datepicker3').html('<i data-date-icon="icon-calendar" data-time-icon="icon-time"></i>');
+$('#amountpan1').html('<strong>&pound;</strong>');
+$('#amountpan2').html('<strong>&pound;</strong>');
+$('#expirydate1, #expirydate2, #expirydate3').datetimepicker({
+    pickTime: false,
+    format: 'yyyy-MM-dd'
+});
+$('#submit').prepend("<i class='icon-circle-arrow-right icon-white'></i> ");
+
+// on change expiry date1
+$('#expirydate1').on('changeDate', function(e) {
+    checkExpiryDate($('#expiry_date1'), 'expiry_date1');
+});    
+
+// on change expiry date2
+$('#expirydate2').on('changeDate', function(e) {
+    checkExpiryDate($('#expiry_date2'), 'expiry_date2');
+});    
+
+// on change expiry date3
+$('#expirydate3').on('changeDate', function(e) {
+    checkExpiryDate($('#expiry_date3'), 'expiry_date3');
+});    
+
+// expirydate1 validation
+function checkExpiryDate($obj, $fieldName){
+    var $expValidationRequest = $.ajax({
+        url: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'validate-expiry-date'), 'default', true); ?>",
+        type: "GET",
+        data: {
+            expirydate: $obj.val(),
+            fieldname: $fieldName
+        },
+        dataType: "json",
+        beforeSend: function ( jqXHR ) {
+            //$('#expiry_date1').nextAll().remove();
+            //var $loadingImage = $("<img src='<?php //echo $this->baseUrl(); ?>/public/themes/default/img/loading.gif' />");
+            //$loadingImage.insertAfter($('#expiry_date1'));
+        }
+    });
+    $expValidationRequest.done(function($result) {
+        //$('#expiry_date1').nextAll().remove();
+        if($result.status == 'success'){
+            //var $loadingImage = $("<img title='<?php //echo $this->translate('Valid Expiry Date'); ?>' src='<?php //echo $this->baseUrl(); ?>/public/themes/default/img/tick.png' />");
+            //$('#expirydate1').append($loadingImage);
+        }else{
+            alert('<?php echo $this->translate('The date entered is not valid as it has expired!'); ?>');
+            $obj.val('');
+            //var $loadingImage = $(
+                //"<img title='<?php //echo $this->translate('Invalid Expiry Date'); ?>' src='<?php //echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />" +
+                //"<ul class='errors'><li><?php //echo $this->translate('This expiry date is invalid!'); ?></li></ul>"
+            //);
+            //$('#expirydate1').append($loadingImage);
+        }
+    });
+    $expValidationRequest.fail(function(jqXHR, textStatus) {
+        //$('#expiry_date1').nextAll().remove();
+        //var $loadingImage = $(
+            //"<img title='<?php //echo $this->translate('Invalid Expiry Date'); ?>' src='<?php //echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />" +
+            //"<ul class='errors'><li><?php //echo $this->translate('Server requesting problem, please try again!'); ?></li></ul>"
+        //);
+        //$('#expirydate1').append($loadingImage);
+    });
+}
+</script>

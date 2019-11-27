@@ -1,0 +1,616 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+?>
+
+<?php
+$timeTitles = $this->timeTitles;
+$quoteTitles = $this->quoteTitles;
+$deliveryTitles = $this->deliveryTitles;
+$collectionTitles = $this->collectionTitles;
+$orderTimes = $this->orderTimes;
+$orderQuote = $this->orderQuote;
+$orderDelivery = $this->orderDelivery;
+$orderCollection = $this->orderCollection;
+
+$timeSessionValue = $orderTimes->data;
+if($timeSessionValue){
+    extract($timeSessionValue);
+    $ctimetype = $dtimetype = '';
+    if(isset($ready_to_collect) AND !empty($ready_to_collect)){
+        $ctimetype = 'ready_to_collect';
+    }elseif(isset($collect_at) AND !empty($collect_at)){
+        $ctimetype = 'collect_at';
+    }elseif(isset($collect_before) AND !empty($collect_before)){
+        $ctimetype = 'collect_before';
+    }elseif(isset($collect_between) AND !empty($collect_between)){
+        $ctimetype = 'collect_between';
+    }
+    
+    if(isset($delivery_asap) AND !empty($delivery_asap)){
+        $dtimetype = 'delivery_asap';
+    }elseif(isset($delivery_at) AND !empty($delivery_at)){
+        $dtimetype = 'delivery_at';
+    }elseif(isset($delivery_before) AND !empty($delivery_before)){
+        $dtimetype = 'delivery_before';
+    }elseif(isset($delivery_between) AND !empty($delivery_between)){
+        $dtimetype = 'delivery_between';
+    }
+    
+    // get collection / delivery times
+    $deliveryTimes = @$$dtimetype;
+    $collectionTimes = @$$ctimetype;
+}
+
+// auto suggest css
+$this->headLink()
+          ->appendStylesheet("{$this->baseUrl()}/public/externals/datetimepicker/css/bootstrap-combined.min.css")
+          ->appendStylesheet("{$this->baseUrl()}/public/externals/datetimepicker/css/bootstrap-datetimepicker.min.css", 'screen', true, array('charset'=>"utf-8"));
+
+// auto suggest js
+$this->headScript()
+          ->appendFile("{$this->baseUrl()}/public/externals/datetimepicker/js/jquery.min.js")
+          ->appendFile("{$this->baseUrl()}/public/externals/datetimepicker/js/bootstrap.min.js")
+          ->appendFile("{$this->baseUrl()}/public/externals/datetimepicker/js/bootstrap-datetimepicker.min.js");
+?>
+
+<style type="text/css">
+    .data-wrapper input[type="text"] {padding-right: 30px; width: 455px; float: left; font-size: 18px; height: 40px;}
+    .data-wrapper {padding-left: 40px; width: 500px;}
+    .data-wrapper > h2 {text-transform: uppercase; font-size: 18px; margin: 0px;}
+    .data-wrapper > ul {padding-left: 0px; list-style: none; font-size: 18px; margin-top: 5px; margin-left: 0px;}
+    .data-wrapper > ul > li {padding: 5px 0px;}
+    .statusImage {position: absolute; margin-left: -25px; margin-top: 13px;}
+    .data-wrapper li .field-input a {float: right; margin-top: 5px;}
+
+    #closedt1 {position: absolute; margin-left: 187px; margin-top: -20px;}
+    #closedt2 {position: absolute; margin-left: 200px; margin-top: -20px;}
+    .element-group1 {background-color: #FFFFFF; margin-left: 550px; margin-top: -305px; position: absolute; width: 320px; box-shadow: 0px 0px 20px 0px #555555; display: none; font-weight: bold;}
+    .element-group2 {background-color: #FFFFFF; margin-left: 550px; margin-top: -305px; position: absolute; width: 320px; box-shadow: 0px 0px 20px 0px #555555; display: none; font-weight: bold;}
+    .element-group1 input[type="radio"], .element-group2 input[type="radio"] {margin-top: -3px;}
+    .element-group1 input[type="text"], .element-group2 input[type="text"] {font-size: 16px; font-weight: bold;}
+    .element-group1 > div, .element-group2 > div {border: 1px solid #ccc; min-height: 35px; padding: 5px 10px;}
+    .table-condensed th, .table-condensed td {background-color: #fff;}
+    .timepicker-picker .table-condensed td {border-bottom: none; border-right: none;}
+    .bootstrap-datetimepicker-widget td, .bootstrap-datetimepicker-widget th {border-radius: 0px !important;}
+    select, textarea, input[type="text"], input[type="password"], input[type="datetime"], input[type="datetime-local"], 
+    input[type="date"], input[type="month"], input[type="time"], input[type="week"], input[type="number"], 
+    input[type="email"], input[type="url"], input[type="search"], input[type="tel"], input[type="color"], .uneditable-input {height: 30px;}
+</style>
+
+<div class="section current">
+    <ul class="progress-steps">
+        <li><a href="javascript:void(0)"><?php echo $this->translate('Collection Details'); ?></a></li>
+        <li>&blacksquare;</li>
+        <li><a href="javascript:void(0)"><?php echo $this->translate('Delivery Details'); ?></a></li>
+        <li>&blacksquare;</li>
+        <li><a href="javascript:void(0)"><?php echo $this->translate('Pick/Drop Times'); ?></a></li>
+        <li>&blacksquare;</li>
+        <li><a href="javascript:void(0)" class="processing"><?php echo $this->translate('Confirmation'); ?></a></li>
+        <li>&blacksquare;</li>
+        <li><a href="javascript:void(0)"><?php echo $this->translate('Payment'); ?></a></li>
+        <div style="clear: both;"></div>
+    </ul>
+
+    <div style="clear: both;"></div>
+
+    <h2 style="font-size: 22px; padding-left: 40px; margin-bottom: 30px;">
+        <?php echo $this->translate('Please carefully check the details below to ensure an error free delivery...'); ?>
+    </h2>
+
+    <div style="clear: both;"></div>
+
+    <?php if ($orderCollection->finished): ?>
+    <div class="data-wrapper">
+        <h2><?php echo $this->translate('Collection Details'); ?></h2>
+        <ul>
+            <?php foreach ($orderCollection->data as $key => $value): ?>
+                <li>
+                    <div class="field-label"><?php echo $this->translate($collectionTitles[$key]); ?></div>
+                    <div class="field-input">
+                        <?php if($key != 'spostcode'){ ?>
+                        <input type="text" name="<?php echo $key; ?>" id="<?php echo $key; ?>" value="<?php echo $value; ?>" />
+                        <span class="statusImage"></span>
+                        <a href="javascript:void(0)" onclick="javascript:saveChangeDetails('<?php echo $key; ?>', 'collection')">                            
+                            <img src="public/themes/default/static/images/save.png" alt="<?php echo $this->translate('Save'); ?>" title="<?php echo $this->translate('Save Change'); ?>" />
+                        </a>
+                        <?php }else{ ?>
+                        <input disabled="disabled" readonly="readonly" type="text" name="<?php echo $key; ?>" id="<?php echo $key; ?>" value="<?php echo $value; ?>" />
+                        <?php } ?>
+                        <div style="clear: both;"></div>
+                    </div>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    </div>    
+    <?php endif; ?>
+
+    <div style="clear: both;"><br /><br /></div>
+    
+    <?php if ($orderDelivery->finished): ?>
+    <div class="data-wrapper">
+        <h2><?php echo $this->translate('Delivery Details'); ?></h2>
+        <ul>
+            <?php foreach ($orderDelivery->data as $key => $value): ?>
+                <li>
+                    <div class="field-label"><?php echo $this->translate($deliveryTitles[$key]); ?></div>
+                    <div class="field-input">
+                        <?php if($key != 'dpostcode'){ ?>
+                        <input type="text" name="<?php echo $key; ?>" id="<?php echo $key; ?>" value="<?php echo $value; ?>" />
+                        <span class="statusImage"></span>
+                        <a href="javascript:void(0)" onclick="javascript:saveChangeDetails('<?php echo $key; ?>', 'delivery')">
+                            <img src="public/themes/default/static/images/save.png" alt="<?php echo $this->translate('Save'); ?>" title="<?php echo $this->translate('Save Change'); ?>" />
+                        </a>
+                        <?php }else{ ?>
+                        <input disabled="disabled" readonly="readonly" type="text" name="<?php echo $key; ?>" id="<?php echo $key; ?>" value="<?php echo $value; ?>" />
+                        <?php } ?>
+                        <div style="clear: both;"></div>
+                    </div>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    </div>    
+    <?php endif; ?>
+
+    <div style="clear: both;"><br /><br /></div>
+        
+    <?php if ($orderTimes->finished): ?>
+    <div class="data-wrapper">
+        <h2><?php echo $this->translate('Pick and Drop Details'); ?></h2>
+        <ul>
+            <?php 
+            $counter = 0;
+            $collectionRadio = $deliveryRadio = '';
+            foreach($orderTimes->data as $key => $value): 
+                $counter++;
+                ?>
+                <li>
+                    <?php if($counter == 1 OR $counter == 3){ ?>
+                        <div class="field-label">
+                            <?php 
+                                //echo $this->translate($timeTitles[$key]); 
+                                if($counter == 1){echo $this->translate('Collection Date and Time');}
+                                elseif($counter == 3){echo $this->translate('Delivery Date and Time');}
+                            ?>
+                        </div>
+                    <?php } ?>
+                    <div class="field-input">
+                        <?php 
+                            $timeValue = '';
+                            if(is_array($value)){
+                                if($key == 'collect_between'){
+                                    $collectionRadio = $key;
+                                }elseif($key == 'delivery_between'){
+                                    $deliveryRadio = $key;
+                                }
+                                $timeValue = $this->translate('Between %1$s And %2$s', $value[0], $value[1]);
+                            }elseif($key == 'ready_to_collect'){
+                                $collectionRadio = $key;
+                                $timeValue = $this->translate('Ready Now');
+                            }elseif($key == 'collect_at'){
+                                $collectionRadio = $key;
+                                $timeValue = $this->translate('At %1$s', $value);
+                            }elseif($key == 'collect_before'){
+                                $collectionRadio = $key;
+                                $timeValue = $this->translate('Before %1$s', $value);
+                            }elseif($key == 'delivery_asap'){
+                                $deliveryRadio = $key;
+                                $timeValue = $this->translate('ASAP');
+                            }elseif($key == 'delivery_at'){
+                                $deliveryRadio = $key;
+                                $timeValue = $this->translate('At %1$s', $value);
+                            }elseif($key == 'delivery_before'){
+                                $deliveryRadio = $key;
+                                $timeValue = $this->translate('Before %1$s', $value);
+                            }else{
+                                $timeValue = $value;
+                            } 
+                        ?>
+                        <input disabled="disabled" readonly="readonly" type="text" name="<?php echo "datetimefield{$counter}"; ?>" id="<?php echo "datetimefield{$counter}"; ?>" value="<?php echo $timeValue; ?>" />
+                        <span class="statusImage"></span>
+                        <?php 
+                        if($counter == 1 OR $counter == 3){ 
+                            if($counter == 1){$type = 'collection';}
+                            elseif($counter == 3){$type = 'delivery';}
+                            ?>
+                        <a href="javascript:void(0)" onclick="javascript:popUpDateTime('<?php echo $type; ?>')">
+                            <img src="public/themes/default/static/images/date-time.png" alt="<?php echo $this->translate('Date-Time'); ?>" title="<?php echo $this->translate('Date-Time'); ?>" />
+                        </a>
+                        <?php } ?>
+                        <div style="clear: both;"></div>
+                    </div>
+                </li>
+                <?php if($counter == 2){ ?><div style="clear: both;"><br /><br /></div><?php } ?>
+            <?php endforeach; ?>
+        </ul>
+    </div>    
+    
+    <div class="element-group1">
+        <div id="collection_date-wrapper">
+            <div id="collection_date-label" style="float: left; line-height: 35px;">
+                <?php echo $this->translate('Collection Date:'); ?>
+            </div>
+            <div id="collection_date-element" class="input-append" style="float: right; margin-top: 3px;">
+                <input type="text" tabindex="1" id="collection_date" name="collection_date" value="<?php echo @$collection_date; ?>" style="width: 150px;" />
+                <span class="add-on">
+                    <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                </span>
+            </div>
+            <a href="javascript:void(0)" id="closedt1" onclick="javascript:closeDTPopUp('.element-group1')">
+                <img src="public/themes/default/static/images/circle-cross.png" />
+            </a>
+            <div style="clear: both;"></div>
+        </div>
+        <div style="line-height: 35px;">
+            <?php echo $this->translate('Choose Collection Time:'); ?>
+        </div>
+        <div id="ready_to_collect-wrapper">
+            <div id="ready_to_collect-label" style="line-height: 35px;">
+                <input type="radio" tabindex="2" onclick="javascript:changeCollectionTime(this)" name="ctimetype" value="ready_to_collect" <?php if(@$ctimetype == 'ready_to_collect'){echo 'checked="checked"';} ?> />
+                <input type="hidden" id="ready_to_collect" name="ready_to_collect" value="1" />
+                <?php echo $this->translate('Ready Now'); ?>
+            </div>
+        </div>
+        <div id="collect_at-wrapper">
+            <div id="collect_at-label" style="float: left; margin-right: 10px; line-height: 35px;">
+                <input type="radio" tabindex="3" onclick="javascript:changeCollectionTime(this)" name="ctimetype" value="collect_at" <?php if(@$ctimetype == 'collect_at'){echo 'checked="checked"';} ?> />
+                <?php echo $this->translate('At'); ?>
+            </div>
+            <div id="collect_at-element" class="input-append" style="margin-top: 3px;">
+                <input type="text" tabindex="4" id="collect_at" name="collect_at" value="<?php echo @$collect_at; ?>" style="width: 150px;" />
+                <span class="add-on">
+                    <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                </span>
+            </div>
+            <div style="clear: both;"></div>
+        </div>
+        <div id="collect_before-wrapper">
+            <div id="collect_before-label" style="float: left; margin-right: 10px; line-height: 35px;">
+                <input type="radio" tabindex="5" onclick="javascript:changeCollectionTime(this)" name="ctimetype" value="collect_before" <?php if(@$ctimetype == 'collect_before'){echo 'checked="checked"';} ?> />
+                <?php echo $this->translate('Before'); ?>
+            </div>
+            <div id="collect_before-element" class="input-append" style="margin-top: 3px;">
+                <input type="text" tabindex="6" id="collect_before" name="collect_before" value="<?php echo @$collect_before; ?>" style="width: 150px;" />
+                <span class="add-on">
+                    <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                </span>
+            </div>
+            <div style="clear: both;"></div>
+        </div>
+        <div id="collect_between-wrapper">
+            <div id="collect_between-label" style="margin-bottom: 10px; margin-top: 5px;">
+                <input type="radio" tabindex="7" onclick="javascript:changeCollectionTime(this)" name="ctimetype" value="collect_between" <?php if(@$ctimetype == 'collect_between'){echo 'checked="checked"';} ?> />
+                <?php echo $this->translate('Between'); ?>
+            </div>
+            <div id="collect_between1-element" class="input-append" style="float: left; margin-right: 10px;">
+                <input type="text" tabindex="8" id="collect_between1" name="collect_between[]" value="<?php echo @$collect_between[0]; ?>" style="width: 117px;" />
+                <span class="add-on">
+                    <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                </span>
+            </div>
+            <div id="collect_between2-element" class="input-append">
+                <input type="text" tabindex="9" id="collect_between2" name="collect_between[]" value="<?php echo @$collect_between[1]; ?>" style="width: 117px;" />
+                <span class="add-on">
+                    <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                </span>
+            </div>
+            <div style="clear: both;"></div>
+        </div>
+    </div>
+    <div class="element-group2">
+        <div id="delivery_date-wrapper">
+            <div id="delivery_date-label" style="float: left; line-height: 35px;">
+                <?php echo $this->translate('Delivery Date:'); ?>
+            </div>
+            <div id="delivery_date-element" class="input-append" style="float: right; margin-top: 3px;">
+                <input type="text" tabindex="1" id="delivery_date" name="delivery_date" value="<?php echo @$delivery_date; ?>" style="width: 150px;" />
+                <span class="add-on">
+                    <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                </span>
+            </div>
+            <a href="javascript:void(0)" id="closedt2" onclick="javascript:closeDTPopUp('.element-group2')">
+                <img src="public/themes/default/static/images/circle-cross.png" />
+            </a>
+            <div style="clear: both;"></div>
+        </div>
+        <div style="line-height: 35px;">
+            <?php echo $this->translate('Choose Delivery Time:'); ?>
+        </div>
+        <div id="delivery_asap-wrapper">
+            <div id="delivery_asap-label" style="line-height: 35px;">
+                <input type="radio" tabindex="2" onclick="javascript:changeDeliveryTime(this)" name="dtimetype" value="delivery_asap" <?php if(@$dtimetype == 'delivery_asap'){echo 'checked="checked"';} ?> />
+                <input type="hidden" id="delivery_asap" name="delivery_asap" value="1" />
+                <?php echo $this->translate('ASAP'); ?>
+            </div>
+        </div>
+        <div id="delivery_at-wrapper">
+            <div id="delivery_at-label" style="float: left; margin-right: 10px; line-height: 35px;">
+                <input type="radio" tabindex="3" onclick="javascript:changeDeliveryTime(this)" name="dtimetype" value="delivery_at" <?php if(@$dtimetype == 'delivery_at'){echo 'checked="checked"';} ?> />
+                <?php echo $this->translate('At'); ?>
+            </div>
+            <div id="delivery_at-element" class="input-append" style="margin-top: 3px;">
+                <input type="text" tabindex="4" id="delivery_at" name="delivery_at" value="<?php echo @$delivery_at; ?>" style="width: 150px;" />
+                <span class="add-on">
+                    <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                </span>
+            </div>
+            <div style="clear: both;"></div>
+        </div>
+        <div id="delivery_before-wrapper">
+            <div id="delivery_before-label" style="float: left; margin-right: 10px; line-height: 35px;">
+                <input type="radio" tabindex="5" onclick="javascript:changeDeliveryTime(this)" name="dtimetype" value="delivery_before" <?php if(@$dtimetype == 'delivery_before'){echo 'checked="checked"';} ?> />
+                <?php echo $this->translate('Before'); ?>
+            </div>
+            <div id="delivery_before-element" class="input-append" style="margin-top: 3px;">
+                <input type="text" tabindex="6" id="delivery_before" name="delivery_before" value="<?php echo @$delivery_before; ?>" style="width: 150px;" />
+                <span class="add-on">
+                    <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                </span>
+            </div>
+            <div style="clear: both;"></div>
+        </div>
+        <div id="delivery_between-wrapper">
+            <div id="delivery_between-label" style="margin-bottom: 10px; margin-top: 5px;">
+                <input type="radio" tabindex="7" onclick="javascript:changeDeliveryTime(this)" name="dtimetype" value="delivery_between" <?php if(@$dtimetype == 'delivery_between'){echo 'checked="checked"';} ?> />
+                <?php echo $this->translate('Between'); ?>
+            </div>
+            <div id="delivery_between1-element" class="input-append" style="float: left; margin-right: 10px;">
+                <input type="text" tabindex="8" id="delivery_between1" name="delivery_between[]" value="<?php echo @$delivery_between[0]; ?>" style="width: 117px;" />
+                <span class="add-on">
+                    <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                </span>
+            </div>
+            <div id="delivery_between2-element" class="input-append">
+                <input type="text" tabindex="9" id="delivery_between2" name="delivery_between[]" value="<?php echo @$delivery_between[1]; ?>" style="width: 117px;" />
+                <span class="add-on">
+                    <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                </span>
+            </div>
+            <div style="clear: both;"></div>
+        </div>
+    </div>
+    <?php endif; ?>
+    
+    <div style="clear: both;"><br /><br /></div>
+    
+    <form action="<?php echo $this->url(array(), 'parcel_order', true); ?>" method="post" class="global_form" enctype="application/x-www-form-urlencoded" id="order_times_form">
+        <input type="hidden" name="save" value="save" />
+        <button type="submit" id="submit" name="submit" style="float: right;">
+            <?php echo $this->translate('Save & Proceed to Payment'); ?>
+        </button>
+    </form>
+</div>
+
+<script type="text/javascript">
+var $varDeliveryTime = '<?php echo $deliveryRadio; ?>';
+var $varCollectionTime = '<?php echo $collectionRadio; ?>';
+var $datePickerIds = '#collection_date-element, #delivery_date-element';
+$($datePickerIds).datetimepicker({
+    pickTime: false,
+    format: 'yyyy-MM-dd'
+});
+
+var $timePickerIds = '#collect_at-element, #collect_before-element, #collect_between1-element, #collect_between2-element, '
+                              + '#delivery_at-element, #delivery_before-element, #delivery_between1-element, #delivery_between2-element'
+
+$($timePickerIds).datetimepicker({
+    pickDate: false,
+    format: 'hh:mm:ss',
+    pick12HourFormat: true
+});
+    
+$('#collection_date-element').on('changeDate', function(e) {
+    var $value = $('#collection_date').val();
+    changeOrderDateTime('collection_date', $value, null, 'datetimefield1');
+});    
+$('#delivery_date-element').on('changeDate', function(e) {
+    var $value = $('#delivery_date').val();
+    changeOrderDateTime('delivery_date', $value, null, 'datetimefield3');
+});    
+    
+$('#collect_at-element').on('changeDate', function(e) {
+    if($varCollectionTime == 'collect_at'){
+        var $value = $('#collect_at').val();
+        changeOrderDateTime($varCollectionTime, $value, null, 'datetimefield2');
+    }else{
+        alert('<?php echo $this->translate('You did not select related collection time type!'); ?>');
+    }
+});    
+$('#collect_before-element').on('changeDate', function(e) {
+    if($varCollectionTime == 'collect_before'){
+        var $value = $('#collect_before').val();
+        changeOrderDateTime($varCollectionTime, $value, null, 'datetimefield2');
+    }else{
+        alert('<?php echo $this->translate('You did not select related collection time type!'); ?>');
+    }
+});
+$('#collect_between1-element').on('changeDate', function(e){
+    if($varCollectionTime == 'collect_between'){
+        var $value1 = $('#collect_between1').val();
+        var $value2 = $('#collect_between2').val();
+        if($value1 != '' && $value2 != ''){
+            changeOrderDateTime($varCollectionTime, $value1, $value2, 'datetimefield2');
+        }else{
+            alert('<?php echo $this->translate('Please provide both times!'); ?>');
+        }
+    }else{
+        alert('<?php echo $this->translate('You did not select related collection time type!'); ?>');
+    }
+});    
+$('#collect_between2-element').on('changeDate', function(e) {
+    if($varCollectionTime == 'collect_between'){
+        var $value1 = $('#collect_between1').val();
+        var $value2 = $('#collect_between2').val();
+        if($value1 != '' && $value2 != ''){
+            changeOrderDateTime($varCollectionTime, $value1, $value2, 'datetimefield2');
+        }else{
+            alert('<?php echo $this->translate('Please provide both times!'); ?>');
+        }
+    }else{
+        alert('<?php echo $this->translate('You did not select related collection time type!'); ?>');
+    }
+});    
+
+$('#delivery_at-element').on('changeDate', function(e) {
+    if($varDeliveryTime == 'delivery_at'){
+        var $value = $('#delivery_at').val();
+        changeOrderDateTime($varDeliveryTime, $value, null, 'datetimefield4');
+    }else{
+        alert('<?php echo $this->translate('You did not select related delivery time type!'); ?>');
+    }
+});    
+$('#delivery_before-element').on('changeDate', function(e) {
+    if($varDeliveryTime == 'delivery_before'){
+        var $value = $('#delivery_before').val();
+        changeOrderDateTime($varDeliveryTime, $value, null, 'datetimefield4');
+    }else{
+        alert('<?php echo $this->translate('You did not select related delivery time type!'); ?>');
+    }
+});    
+$('#delivery_between1-element').on('changeDate', function(e) {
+    if($varDeliveryTime == 'delivery_between'){
+        var $value1 = $('#delivery_between1').val();
+        var $value2 = $('#delivery_between2').val();
+        if($value1 != '' && $value2 != ''){
+            changeOrderDateTime($varDeliveryTime, $value1, $value2, 'datetimefield4');
+        }else{
+            alert('<?php echo $this->translate('Please provide both times!'); ?>');
+        }
+    }else{
+        alert('<?php echo $this->translate('You did not select related delivery time type!'); ?>');
+    }
+});    
+$('#delivery_between2-element').on('changeDate', function(e) {
+    if($varDeliveryTime == 'delivery_between'){
+        var $value1 = $('#delivery_between1').val();
+        var $value2 = $('#delivery_between2').val();
+        if($value1 != '' && $value2 != ''){
+            changeOrderDateTime($varDeliveryTime, $value1, $value2, 'datetimefield4');
+        }else{
+            alert('<?php echo $this->translate('Please provide both times!'); ?>');
+        }
+    }else{
+        alert('<?php echo $this->translate('You did not select related delivery time type!'); ?>');
+    }
+});    
+
+function changeCollectionTime($obj){
+    $('#collect_at').val('');
+    $('#collect_before').val('');
+    $('#collect_between1').val('');
+    $('#collect_between2').val('');
+    $varCollectionTime = $($obj).val();
+    if($varCollectionTime == 'ready_to_collect'){
+        var $value = $('#ready_to_collect').val();        
+        changeOrderDateTime($varCollectionTime, $value, null, 'datetimefield2');
+    }
+}
+
+function changeDeliveryTime($obj){
+    $('#delivery_at').val('');
+    $('#delivery_before').val('');
+    $('#delivery_between1').val('');
+    $('#delivery_between2').val('');
+    $varDeliveryTime = $($obj).val();
+    if($varDeliveryTime == 'delivery_asap'){
+        var $value = $('#delivery_asap').val();
+        changeOrderDateTime($varDeliveryTime, $value, null, 'datetimefield4');
+    }
+}
+    
+function saveChangeDetails($obj, $type){
+    var $fieldObj = $('#'+$obj);
+    var $loaderHolder = $fieldObj.next();
+    
+    var $request = $.ajax({
+        url: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'change-order-details'), 'default', true); ?>",
+        type: "GET",
+        data: {
+            type: $type,
+            name: $obj,
+            value: $fieldObj.val()
+        },
+        dataType: "json",
+        beforeSend: function(jqXHR){
+            var $loaderImage = "<img src='public/themes/default/static/images/loading.gif'>";
+            $loaderHolder.html($loaderImage);
+        }
+    });
+    $request.done(function($result){
+        if($result.status == 'success'){
+            var $loaderImage = "<img src='public/themes/default/static/images/tick.png'>";
+            $loaderHolder.html($loaderImage);
+        }else{
+            var $loaderImage = "<img src='public/themes/default/static/images/cross.png'>";
+            $loaderHolder.html($loaderImage);
+            alert("<?php echo $this->translate('Request failed, something went wrong!'); ?>");
+        }
+    });
+    $request.fail(function(jqXHR, textStatus){
+        var $loaderImage = "<img src='public/themes/default/static/images/cross.png'>";
+        $loaderHolder.html($loaderImage);
+        alert("<?php echo $this->translate('Request failed: '); ?>" + textStatus);
+    });    
+}
+
+function changeOrderDateTime($name, $value1, $value2, $resultField){
+    var $fieldObj = $('#'+$resultField);
+    var $loaderHolder = $fieldObj.next();
+    
+    var $request = $.ajax({
+        url: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'change-order-date-time'), 'default', true); ?>",
+        type: "GET",
+        data: {
+            name: $name,
+            value1: $value1,
+            value2: $value2
+        },
+        dataType: "json",
+        beforeSend: function(jqXHR){
+            var $loaderImage = "<img src='public/themes/default/static/images/loading.gif'>";
+            $loaderHolder.html($loaderImage);
+        }
+    });
+    $request.done(function($result){
+        if($result.status == 'success'){
+            var $loaderImage = "<img src='public/themes/default/static/images/tick.png'>";
+            $loaderHolder.html($loaderImage);
+            $fieldObj.val($result.content);
+        }else{
+            var $loaderImage = "<img src='public/themes/default/static/images/cross.png'>";
+            $loaderHolder.html($loaderImage);
+            alert("<?php echo $this->translate('Request failed, something went wrong!'); ?>");
+        }
+    });
+    $request.fail(function(jqXHR, textStatus){
+        var $loaderImage = "<img src='public/themes/default/static/images/cross.png'>";
+        $loaderHolder.html($loaderImage);
+        alert("<?php echo $this->translate('Request failed: '); ?>" + textStatus);
+    });    
+}
+
+function popUpDateTime($type){
+    if($type == 'collection'){
+        $('div.element-group2').css('display', 'none');
+        $('div.element-group1').css('display', 'block');
+    }else if($type == 'delivery'){
+        $('div.element-group1').css('display', 'none');
+        $('div.element-group2').css('display', 'block');
+    }
+}
+
+function closeDTPopUp($obj){
+    $($obj).css('display', 'none');
+}
+</script>

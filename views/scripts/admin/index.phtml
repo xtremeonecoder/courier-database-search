@@ -1,0 +1,29 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+?>
+
+<div>
+    <div id="formholder">
+        <?php 
+            $menu = array('menu' => 'admin_top_menu');
+            echo $this->topMenuWidget(array('headtitle' => 'Admin', 'menu' => $menu));
+        ?>
+        <h4>
+            <i class="icon-home" style="vertical-align:middle; margin-top: -2px;"></i>
+            <?php echo $this->translate('Admin Panel [%s]', $this->viewer()->getTitle()); ?>
+        </h4>
+        <div style="clear: both;"></div>
+    </div>
+</div>

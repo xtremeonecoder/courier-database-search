@@ -1,0 +1,125 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+?>
+
+<style type="text/css">
+    #dashboard {
+        margin-top: 315px !important;
+        box-shadow: none !important;
+    }
+    #topbar {
+        height: 250px !important;
+        z-index: 5 !important;
+        overflow: hidden !important;
+        background: #ffffff !important;
+        background-image: none !important;
+        border-bottom: 1px solid #999 !important;
+        -webkit-box-shadow: 0px 20px 65px -50px #000000 !important;
+        -moz-box-shadow: 0px 20px 65px -50px #000000 !important;
+        box-shadow: 0px 20px 65px -50px #000000 !important;
+    }
+    
+    form#quotation_form {
+        width: 730px; 
+        margin: 0px auto;
+    }
+    form#quotation_form .odddiv {
+        float: left;
+        margin-right: 5px;
+    }
+    form#quotation_form .evendiv {
+        float: left;
+        margin-right: 20px;
+/*        margin-top: 15px;        */
+    }
+    form#quotation_form label {
+        font-size: 18px;
+        margin-left: 0px;
+        font-weight: normal !important;
+    }
+    form#quotation_form input {
+        font-size: 18px;
+        width: 125px;
+        margin-top: 2px !important;
+        font-weight: normal !important;
+    }
+    form#quotation_form .odddiv input {
+        margin-top: 24px !important;
+    }
+    form#quotation_form .odddiv label {
+        position: absolute;
+    }
+    form#quotation_form .evendiv label {
+        visibility: hidden;
+    }
+    #loadingpan {
+        display: none;
+        text-align: center; 
+        margin-bottom: 20px;
+    }
+    .homeTopHeader > div {max-height: 35px;}
+    .homeBottom {margin-top: 15px !important;}
+    #loadingpan {margin-bottom: 10px !important;}
+    .section {background-color: #DEE9E9 !important;}
+</style>
+
+<div class="current">
+    <div class="homeTopHeader">
+        <div>
+            <?php echo $this->translate('From an envelope to a pallet, get it delivered,'); ?>
+        </div>
+        <div>
+            <?php echo $this->translate('same day, securely and on time or your money back.'); ?>
+        </div>
+    </div>
+    <div id="loadingpan"><img src='public/themes/default/static/images/progress.gif' /></div>
+    <?php echo $this->quoteForm->render($this); ?>
+    <div class="homeBottom">
+        <?php echo $this->translate('Same day collection from Coventry, Nuneaton, Bedworth, Stratford, Leamington, Warwick, Rugby, Birmingham and delivering all over mainland UK.'); ?>
+    </div>
+</div>
+
+<script type="text/javascript">
+$('#getquote').click(function($event){
+    var $request = $.ajax({
+        url: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'check-work-zone'), 'default', true); ?>",
+        type: "GET",
+        data: {
+            source: $('#cpostcode1').val()
+        },
+        dataType: "json",
+        beforeSend: function(jqXHR){
+            $('#loadingpan').css('display', 'block');
+        }
+    });
+    $request.done(function($result){
+        if($result.status == 'success'){
+            if($('#cpostcode1').val()=='' || $('#cpostcode2').val()=='' || $('#dpostcode1').val()=='' || $('#dpostcode2').val()==''){
+                $('#loadingpan').css('display', 'none');
+                alert("<?php echo $this->translate('Please, fill all the input fields!'); ?>");
+            }else{
+                $('#quotation_form').submit();
+            }
+        }else{            
+            $('#loadingpan').css('display', 'none');
+            alert("<?php echo $this->translate('Given postcode is not in our work zone!'); ?>");
+        }
+    });
+    $request.fail(function(jqXHR, textStatus){
+        $('#loadingpan').css('display', 'none');
+        alert("<?php echo $this->translate('Request failed: '); ?>" + textStatus);
+    });            
+});
+</script>

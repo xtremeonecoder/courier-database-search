@@ -1,0 +1,161 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+
+$company = $this->company;
+?>
+
+<style type="text/css">
+    .comnav {margin-left: 0px;}
+    .comnav > li {float: left; list-style: none;}
+    .comnav > li.seperator {padding: 0px 5px 0px 5px;}
+</style>
+
+<div>
+    <div id="formholder">
+        <h4>
+            <?php echo $this->translate('Courier in %s, %s', $company->getCity()->getTitle(), $company->getCounty()->getTitle()); ?>
+        </h4>
+        <h5>
+            <i class="icon-user" style="vertical-align:middle; margin-top: -2px;"></i>
+            <?php echo $company->getTitle(); ?>
+        </h5>
+        <br />
+        <div style="clear: both;"></div>
+        <div class="tabbable">
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#tab1" data-toggle="tab"><?php echo $this->translate('Contact Details'); ?></a></li>
+                <li><a href="#tab2" data-toggle="tab"><?php echo $this->translate('Vehicles'); ?></a></li>
+                <li><a href="#tab3" data-toggle="tab"><?php echo $this->translate('Insurance'); ?></a></li>
+                <li><a href="#tab4" data-toggle="tab"><?php echo $this->translate('Payment Terms'); ?></a></li>
+                <li><a href="#tab5" data-toggle="tab"><?php echo $this->translate('Services'); ?></a></li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active" id="tab1">
+                    <p><?php echo $company->getMobileNo(); ?></p>
+                    <p><?php echo $company->getFullAddress(); ?></p>
+                    <ul class="comnav">
+                        <?php if($company->getEmail()){ ?>
+                        <li><a href="<?php echo $company->getEmailHref(); ?>"><?php echo $this->translate('Email Us'); ?></a></li>
+                        <?php }if($company->getWebsite()){ ?>
+                        <li class="seperator">|</li>
+                        <li><a href="<?php echo $company->getWebsite(); ?>" target="_blank"><?php echo $this->translate('Visit Website'); ?></a></li>
+                        <?php } ?>
+                        <div style="clear: both;"></div>
+                    </ul>
+                    <hr />
+                    <p><?php echo $this->translate('Is this your company? Do you wish to amend or delete the details?'); ?></p>
+                    <p><?php echo $this->translate('%sClick here%s and a password will be sent to your email which will allow you to amend or delete your details.', "<a href='javascript:void(0)'>", "</a>"); ?></p>
+                </div>
+                <div class="tab-pane" id="tab2">
+                    <?php 
+                    $vehicles = $company->getVehicles();
+                    if(count($vehicles)>0){
+                        foreach($vehicles as $vehicle){
+                    ?>
+                    <p>
+                        <?php 
+                            echo "{$vehicle->getVehicleNumber()} x {$vehicle->getMake()} {$vehicle->getModel()}";
+                        ?>
+                    </p>
+                    <p>
+                        <?php echo $this->translate('Carrying Capacity:'); ?>
+                        <br />
+                        <?php echo $this->translate('Height: %s', $vehicle->getHeight()); ?>
+                        <br />
+                        <?php echo $this->translate('Width: %s', $vehicle->getWidth()); ?>
+                        <br />
+                        <?php echo $this->translate('Length: %s', $vehicle->getLength()); ?>
+                        <br />
+                        <?php echo $this->translate('Weight: %s', $vehicle->getWeight()); ?>
+                    </p>
+                    <hr />
+                    <?php }}else{ ?>
+                        <p><?php echo $this->translate('Sorry, no vehicles information found!'); ?></p>
+                    <?php } ?>
+                </div>
+                <div class="tab-pane" id="tab3">
+                    <?php 
+                    $insurances = $company->getInsurance();
+                    if(count($insurances)>0){
+                        foreach($insurances as $insurance){
+                    ?>
+                    <p>
+                        <?php echo $insurance->getInsurance2(); ?>
+                        <br />
+                        <?php echo $this->translate('Amount covered &pound;%s', $insurance->getAmountCovered1()); ?>
+                        <br />
+                        <?php echo $this->translate('Expiry date %s', @date('d/m/Y', strtotime($insurance->getExpiryDate2()))); ?>
+                    </p>
+                    <p>
+                        <?php echo $insurance->getInsurance1(); ?>
+                        <br />
+                        <?php echo $this->translate('Expiry date %s', @date('d/m/Y', strtotime($insurance->getExpiryDate1()))); ?>
+                    </p>
+                    <p>
+                        <?php echo $insurance->getInsurance3(); ?>
+                        <br />
+                        <?php echo $this->translate('Amount covered &pound;%s', $insurance->getAmountCovered2()); ?>
+                        <br />
+                        <?php echo $this->translate('Expiry date %s', @date('d/m/Y', strtotime($insurance->getExpiryDate3()))); ?>
+                    </p>
+                    <hr />
+                    <?php }}else{ ?>
+                        <p><?php echo $this->translate('Sorry, no insurance information found!'); ?></p>
+                    <?php } ?>
+                </div>
+                <div class="tab-pane" id="tab4">
+                    <?php 
+                    $payments = $company->getPaymentTerms();
+                    if(count($payments)>0){
+                        foreach($payments as $payment){
+                    ?>
+                    <p>
+                        <?php echo $this->translate('Payment Option'); ?>
+                        <br />
+                        <?php echo $this->translate('Payment duration %s', $payment->getDuration()); ?>
+                        <br />
+                        <?php echo $this->translate('Duration starts %s', $payment->getDurationStart()); ?>
+                        <br />
+                        <?php echo $this->translate('Comments %s', $payment->getComment()); ?>
+                    </p>
+                    <hr />
+                    <?php }}else{ ?>
+                        <p><?php echo $this->translate('Sorry, no payment terms found!'); ?></p>
+                    <?php } ?>
+                </div>
+                <div class="tab-pane" id="tab5">
+                    <?php 
+                    $services = $company->getServices();
+                    if(count($services)>0){
+                        foreach($services as $service){
+                            $serviceArray = $service->getServices();
+                    ?>
+                    <p>
+                        <?php echo $this->translate('Our Services:'); ?>
+                        <?php foreach($serviceArray as $serviceArr){ ?>
+                        <br />
+                        <?php echo $serviceArr; ?>
+                        <?php } ?>
+                    </p>
+                    <hr />
+                    <?php }}else{ ?>
+                        <p><?php echo $this->translate('Sorry, no services found!'); ?></p>
+                    <?php } ?>
+                </div>
+            </div>
+        </div>        
+        <div style="clear: both;"></div>
+    </div>
+</div>

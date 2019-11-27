@@ -1,0 +1,35 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+?>
+
+<div class="section current">
+    <ul class="progress-steps">
+        <li><a href="javascript:void(0)" class="processing"><?php echo $this->translate('Collection Details'); ?></a></li>
+        <li>&blacksquare;</li>
+        <li><a href="javascript:void(0)"><?php echo $this->translate('Delivery Details'); ?></a></li>
+        <li>&blacksquare;</li>
+        <li><a href="javascript:void(0)"><?php echo $this->translate('Pick/Drop Times'); ?></a></li>
+        <li>&blacksquare;</li>
+        <li><a href="javascript:void(0)"><?php echo $this->translate('Confirmation'); ?></a></li>
+        <li>&blacksquare;</li>
+        <li><a href="javascript:void(0)"><?php echo $this->translate('Payment'); ?></a></li>
+        <div style="clear: both;"></div>
+    </ul>
+    <div style="clear: both;"></div>
+    <h2 style="font-size: 22px; padding-left: 2px; margin-bottom: 5px;">
+        <?php echo $this->translate('Firstly, I need your collection details...'); ?>
+    </h2>
+    <?php echo $this->form->render($this); ?>
+</div>

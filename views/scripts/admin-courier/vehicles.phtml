@@ -1,0 +1,150 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+
+$vehicles = $this->vehicles;
+$company = $this->company;
+?>
+
+<style type="text/css">
+    form#filter_form label {display: none;}
+    .pagination {margin-top: 0px;}
+    .custsubnav > li {text-align: left;}
+    @media (max-width: 980px) {
+        .custresclass {
+            float: none !important;
+        }
+    }
+</style>
+
+<?php 
+     $menu = array('menu' => 'admin_top_menu');
+     echo $this->topMenuWidget(array('headtitle' => 'Admin', 'menu' => $menu));
+?>
+
+<h4>
+     <i class="icon-home" style="vertical-align:middle; margin-top: -2px;"></i>
+     <?php echo $this->translate('Admin Panel [Vehicles List of %s]', $company->getTitle()); ?>
+</h4>
+
+<div style="clear: both;"></div>
+
+<?php if(count($vehicles)): ?>
+<div class="span item_results" style="margin-left: 0px;">
+  <div class="item-found">
+    <?php $count = count($vehicles); ?>
+    <?php 
+        if($count==1){
+            echo $this->translate('Total %s vehicle found.', $count);
+        }else{
+            echo $this->translate('Total %s vehicles found.', $count);
+        }
+    ?>
+      <div class="btn-toolbar custresclass" style="float: right;">
+          <div class="btn-group">
+              <a href="javascript:void(0)" class="btn" id="deleteSelected">
+                  <i class="icon-trash"></i>
+                  <?php echo $this->translate('Delete Selected'); ?>
+              </a>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="company-list span" style="margin-left: 0px;">
+    <table class="list-table table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>
+                    <input type="checkbox" name="checkall" id="checkallitems" value="all" />
+                </th>
+                <th style="width: 180px;"><?php echo $this->translate('Make'); ?></th>
+                <th style="width: 180px;"><?php echo $this->translate('Model'); ?></th>
+                <th style="width: 180px;"><?php echo $this->translate('Weight'); ?></th>
+                <th style="width: 150px;"><?php echo $this->translate('Width'); ?></th>
+                <th style="width: 150px;"><?php echo $this->translate('Height'); ?></th>
+                <th style="width: 150px;"><?php echo $this->translate('Length'); ?></th>
+                <th style="width: 150px;"><?php echo $this->translate('No. of Vehicles'); ?></th>
+                <th style="width: 50px;"><?php echo $this->translate('Options'); ?></th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach($vehicles as $item): ?>
+                <tr>
+                    <td style="text-align: center;">
+                        <input type="checkbox" name="checkit[]" class="checkeditems" value="<?php echo $item->getIdentity(); ?>" />
+                    </td>
+                    <td><?php echo $item->getMake(); ?></td>                
+                    <td><?php echo $item->getModel(); ?></td>
+                    <td><?php echo $item->getWeight(); ?></td>
+                    <td><?php echo $item->getWidth(); ?></td>
+                    <td><?php echo $item->getHeight(); ?></td>
+                    <td><?php echo $item->getLength(); ?></td>
+                    <td><?php echo $item->getVehicleNumber(); ?></td>
+                    <td style="text-align: center;">
+                        <div class="btn-toolbar">
+                           <div class="btn-group btn-group-vertical">
+                              <a href="<?php echo $this->url(array('action' => 'edit-vehicle', 'type' => 'vehicle', 'cid' => $company->getIdentity(), 'id' => $item->getIdentity()), 'admin_courier_info', true); ?>" class="btn" title="<?php echo $this->translate('Edit'); ?>">
+                                  <i class="icon-edit"></i>
+                              </a>
+                              <a href="javascript:void(0)" onclick="javascript:deleteThis(<?php echo $item->getIdentity(); ?>)" class="btn" title="<?php echo $this->translate('Delete'); ?>">
+                                  <i class="icon-trash"></i>
+                              </a>
+                           </div>
+                        </div>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>
+<?php else: ?>
+<div class="alert">
+    <button data-dismiss="alert" class="close" type="button">&khcy;</button>
+    <?php echo $this->translate('%sSorry!%s No vehicles information found for this courier.', "<strong>", "</strong>"); ?>
+</div>
+<?php endif; ?>
+
+<script type="text/javascript">
+$('#checkallitems').click(function(){
+    $('.checkeditems').prop('checked', $(this).is(':checked'));
+});
+$('#deleteSelected').click(function(){
+    if(confirm('<?php echo $this->translate('Are you sure to delete the selected vehicles?'); ?>')){
+        var $count = 0;
+        var $selectedItems = new Array();
+        $.each($('.checkeditems'), function($key, $item){
+            if($($item).is(':checked')){
+                $selectedItems[$count++] = $($item).val();
+            }
+        });
+        
+        if($count>0){
+            $selectedItems = $selectedItems.join(',');
+            if($selectedItems != ''){
+                location.href = "<?php echo $this->url(array('action' => 'delete-vehicle', 'cid' => $company->getIdentity()), 'admin_courier_general_info', true); ?>/id/"+$selectedItems;
+            }
+        }else{
+            alert('<?php echo $this->translate('Sorry, you did not select any vehicles!'); ?>');
+        }
+    }
+});
+function deleteThis($itemId){
+    if(confirm('<?php echo $this->translate('Are you sure to delete the vehicle?'); ?>')){
+        if($itemId != ''){
+            location.href = "<?php echo $this->url(array('action' => 'delete-vehicle', 'cid' => $company->getIdentity()), 'admin_courier_general_info', true); ?>/id/"+$itemId;
+        }
+    }
+}
+</script>

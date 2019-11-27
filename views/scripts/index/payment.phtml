@@ -1,0 +1,65 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+?>
+
+<?php
+$errors = $this->errors;
+$success = $this->success;
+$paypalResponse = $this->paypalResponse;
+?>
+<div class="section current">
+    <ul class="progress-steps">
+        <li><a href="javascript:void(0)"><?php echo $this->translate('Collection Details'); ?></a></li>
+        <li>&blacksquare;</li>
+        <li><a href="javascript:void(0)"><?php echo $this->translate('Delivery Details'); ?></a></li>
+        <li>&blacksquare;</li>
+        <li><a href="javascript:void(0)"><?php echo $this->translate('Pick/Drop Times'); ?></a></li>
+        <li>&blacksquare;</li>
+        <li><a href="javascript:void(0)"><?php echo $this->translate('Confirmation'); ?></a></li>
+        <li>&blacksquare;</li>
+        <li><a href="javascript:void(0)" class="processing"><?php echo $this->translate('Payment'); ?></a></li>
+        <div style="clear: both;"></div>
+    </ul>
+    
+    <div style="clear: both;"></div>
+    
+    <h2 style="font-size: 22px; padding-left: 43px; margin-bottom: 30px;">
+        <?php echo $this->translate('Now, I need you to complete the payment process...'); ?>
+    </h2>
+    
+    <div style="clear: both;"></div>
+    
+    <div>
+        <?php
+            if($success){
+                /*
+                  //Sometimes Payment are kept pending even when transaction is complete.
+                  //May be because of Currency change, or user choose to review each payment etc.
+                  //hence we need to notify user about it and ask him manually approve the transiction
+                 */
+                if('completed' == strtolower($paypalResponse["paymentstatus"])){
+                    echo "<div style='color: green; font-size: 18px; padding-left: 44px;'>{$this->translate('Payment received and order placed successfullly!')}</div>";
+                    //echo '<pre>';
+                    //print_r($paypalResponse);
+                    //echo '</pre>';
+                }elseif('pending' == strtolower($paypalResponse["paymentstatus"])){
+                    echo "<div style='color:red; font-size: 18px; padding-left: 44px;'>Transaction Complete, but payment is still pending! You need to manually authorize this payment in your <a target='_new' href='http://www.paypal.com'>Paypal Account</a></div>";
+                }
+            }elseif($errors){
+                echo "<div style='color:red; font-size: 18px; padding-left: 44px;'>$errors</div>";
+            }
+        ?>
+    </div>    
+</div>

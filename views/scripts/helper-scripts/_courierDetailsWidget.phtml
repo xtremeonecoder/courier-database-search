@@ -1,0 +1,37 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+
+$company = $this->company;
+?>
+
+<h5>
+    <a href="<?php echo $company->getHref(); ?>">
+        <i class="icon-shopping-cart" style="vertical-align:middle; margin-top: -2px;"></i>
+        <?php echo $company->getTitle(); ?>
+    </a>
+</h5>
+<p><?php echo $company->getMobileNo(); ?></p>
+<p><?php echo $company->getFullAddress(); ?></p>
+<ul class="comnav">
+    <?php if ($company->getEmail()) { ?>
+        <li><a href="<?php echo $company->getEmailHref(); ?>"><?php echo $this->translate('Email Us'); ?></a></li>
+    <?php }if ($company->getWebsite()) { ?>
+        <li class="seperator">|</li>
+        <li><a href="<?php echo $company->getWebsite(); ?>" target="_blank"><?php echo $this->translate('Visit Website'); ?></a></li>
+    <?php } ?>
+    <li class="seperator">|</li>
+    <li><a href="<?php echo $company->getHref(); ?>"><?php echo $this->translate('Full Profile'); ?></a></li>
+    <div style="clear: both;"></div>
+</ul>

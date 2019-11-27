@@ -1,0 +1,52 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+?>
+
+<style type="text/css">
+    ul.site-banner {
+        width: 730px !important;
+        list-style: none;        
+        padding-left: 0px; 
+        margin: 30px auto 0px;
+    }
+    ul.site-banner > li {
+        float: left;
+        text-align: center;
+        margin: 0px 60px;
+    }
+    ul.site-banner > li > p {
+        color: #ffffff;
+        font-size: 22px;
+        margin-top: 10px;
+        margin-bottom: 0px;
+        letter-spacing: 1px !important;
+    }
+</style>
+
+<ul class="site-banner">
+    <li>
+        <img src="public/themes/default/static/images/quote.png" />
+        <p><?php echo $this->translate('1. Quote'); ?></p>
+    </li>
+    <li>
+        <img src="public/themes/default/static/images/payment.png" />
+        <p><?php echo $this->translate('2. Payment'); ?></p>
+    </li>
+    <li>
+        <img src="public/themes/default/static/images/delivered.png" />
+        <p><?php echo $this->translate('3. Delivered'); ?></p>
+    </li>
+    <div style="clear: both;"></div>
+</ul>

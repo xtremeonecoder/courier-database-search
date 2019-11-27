@@ -1,0 +1,69 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+
+// auto suggest css
+$this->headLink()
+          //->appendStylesheet("{$this->baseUrl()}/public/externals/datetimepicker/css/bootstrap-combined.min.css")
+          ->appendStylesheet("{$this->baseUrl()}/public/externals/datetimepicker/css/bootstrap-datetimepicker.min.css", 'screen', true, array('charset'=>"utf-8"));
+
+// auto suggest js
+$this->headScript()
+          //->appendFile("{$this->baseUrl()}/public/externals/datetimepicker/js/jquery.min.js")
+          //->appendFile("{$this->baseUrl()}/public/externals/datetimepicker/js/bootstrap.min.js")
+          ->appendFile("{$this->baseUrl()}/public/externals/datetimepicker/js/bootstrap-datetimepicker.min.js");
+
+// get company
+$company = $this->company;
+?>
+
+<style type="text/css">
+    form#insurance_form ul.errors {display: none;}
+</style>
+
+<?php
+$menu = array('menu' => 'admin_top_menu');
+echo $this->topMenuWidget(array('headtitle' => 'Admin', 'menu' => $menu));
+?>
+
+<div id="formholder">
+    <h4>
+        <i class="icon-home" style="vertical-align:middle; margin-top: -2px;"></i>
+        <?php echo $this->translate('Admin Panel [Edit Insurance of %s]', $company->getTitle()); ?>
+    </h4>
+
+    <div style="clear: both;"><br /></div>
+
+    <div class="span add-company-form" style="margin-left: 0px;">
+        <?php echo $this->form->render($this); ?>
+    </div>
+    <div style="clear: both;"></div>
+</div>
+
+<script type="text/javascript">
+$('#dummy1').html('<?php echo $this->translate('Courier Insurance'); ?>');
+$('#dummy2').html('<?php echo $this->translate('Goods In Transit'); ?>');
+$('#dummy3').html('<?php echo $this->translate('Public Liability'); ?>');
+//$('#dummy4').html('<?php //echo $this->translate('You can add or amend these details later.'); ?>');
+$('#datepicker1').html('<i data-date-icon="icon-calendar" data-time-icon="icon-time"></i>');
+$('#datepicker2').html('<i data-date-icon="icon-calendar" data-time-icon="icon-time"></i>');
+$('#datepicker3').html('<i data-date-icon="icon-calendar" data-time-icon="icon-time"></i>');
+$('#amountpan1').html('<strong>&pound;</strong>');
+$('#amountpan2').html('<strong>&pound;</strong>');
+$('#expirydate1, #expirydate2, #expirydate3').datetimepicker({
+    pickTime: false,
+    format: 'yyyy-MM-dd'
+});
+$('#submit').prepend("<i class='icon-edit icon-white'></i> ");
+</script>

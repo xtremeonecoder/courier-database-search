@@ -1,0 +1,393 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+?>
+
+<?php
+$errorMessages = $this->errorMessages;
+$timeSessionValue = $this->timeSessionValue;
+if($timeSessionValue){
+    extract($timeSessionValue);
+    $ctimetype = $dtimetype = '';
+    if(isset($ready_to_collect) AND !empty($ready_to_collect)){
+        $ctimetype = 'ready_to_collect';
+    }elseif(isset($collect_at) AND !empty($collect_at)){
+        $ctimetype = 'collect_at';
+    }elseif(isset($collect_before) AND !empty($collect_before)){
+        $ctimetype = 'collect_before';
+    }elseif(isset($collect_between) AND !empty($collect_between)){
+        $ctimetype = 'collect_between';
+    }
+    
+    if(isset($delivery_asap) AND !empty($delivery_asap)){
+        $dtimetype = 'delivery_asap';
+    }elseif(isset($delivery_at) AND !empty($delivery_at)){
+        $dtimetype = 'delivery_at';
+    }elseif(isset($delivery_before) AND !empty($delivery_before)){
+        $dtimetype = 'delivery_before';
+    }elseif(isset($delivery_between) AND !empty($delivery_between)){
+        $dtimetype = 'delivery_between';
+    }
+    
+    // get collection / delivery times
+    $deliveryTimes = @$$dtimetype;
+    $collectionTimes = @$$ctimetype;
+}else{
+    extract($_POST);
+    
+    // get collection / delivery times
+    $deliveryTimes = @$$dtimetype;
+    $collectionTimes = @$$ctimetype;
+}
+
+
+// auto suggest css
+$this->headLink()
+          ->appendStylesheet("{$this->baseUrl()}/public/externals/datetimepicker/css/bootstrap-combined.min.css")
+          ->appendStylesheet("{$this->baseUrl()}/public/externals/datetimepicker/css/bootstrap-datetimepicker.min.css", 'screen', true, array('charset'=>"utf-8"));
+
+// auto suggest js
+$this->headScript()
+          ->appendFile("{$this->baseUrl()}/public/externals/datetimepicker/js/jquery.min.js")
+          ->appendFile("{$this->baseUrl()}/public/externals/datetimepicker/js/bootstrap.min.js")
+          ->appendFile("{$this->baseUrl()}/public/externals/datetimepicker/js/bootstrap-datetimepicker.min.js");
+?>
+
+<style type="text/css">
+    a:hover {text-decoration: none;}
+    #resultPreview > div > span {color: #E63C5B;}
+    #resultPreview {border: none; padding: 0px; margin-bottom: 30px;}
+    form#order_times_form {margin: 0px auto 20px; width: 960px; font-size: 15px; font-weight: bold;}
+    .element-group1 {float: left; width: 320px;}
+    .element-group2 {float: left; width: 320px; margin: 0px 40px;}
+    .element-group3 {vertical-align: bottom; height: 326px; display: table-cell;}
+    form#order_times_form input[type="radio"] {margin-top: -3px;}
+    form#order_times_form input[type="text"] {font-size: 16px; font-weight: bold;}
+    .element-group3 button {font: 20px HelveticaNeue,Helvetica,Arial,sans-serif;}
+    .element-group1 > div, .element-group2 > div, .element-group3 > div {border: 1px solid #ccc; min-height: 35px; padding: 5px 10px;}
+    .table-condensed th, .table-condensed td {background-color: #fff;}
+    .timepicker-picker .table-condensed td {border-bottom: none; border-right: none;}
+    .bootstrap-datetimepicker-widget td, .bootstrap-datetimepicker-widget th {border-radius: 0px !important;}
+    select, textarea, input[type="text"], input[type="password"], input[type="datetime"], input[type="datetime-local"], 
+    input[type="date"], input[type="month"], input[type="time"], input[type="week"], input[type="number"], 
+    input[type="email"], input[type="url"], input[type="search"], input[type="tel"], input[type="color"], .uneditable-input {height: 30px;}
+</style>
+
+<div class="section current">
+    <ul class="progress-steps">
+        <li><a href="javascript:void(0)"><?php echo $this->translate('Collection Details'); ?></a></li>
+        <li>&blacksquare;</li>
+        <li><a href="javascript:void(0)"><?php echo $this->translate('Delivery Details'); ?></a></li>
+        <li>&blacksquare;</li>
+        <li><a href="javascript:void(0)" class="processing"><?php echo $this->translate('Pick/Drop Times'); ?></a></li>
+        <li>&blacksquare;</li>
+        <li><a href="javascript:void(0)"><?php echo $this->translate('Confirmation'); ?></a></li>
+        <li>&blacksquare;</li>
+        <li><a href="javascript:void(0)"><?php echo $this->translate('Payment'); ?></a></li>
+        <div style="clear: both;"></div>
+    </ul>
+    <div style="clear: both;"></div>
+    <h2 style="font-size: 22px; padding-left: 43px; margin-bottom: 30px;">
+        <?php echo $this->translate('Now, I need your preferred date and times for pick and drop...'); ?>
+    </h2>
+    <div style="clear: both;"></div>
+    <?php if(!empty($errorMessages)){ ?>
+        <ul class="form-errors" style="margin-left: 60px; margin-bottom: 20px;">
+            <?php echo $errorMessages; ?>
+        </ul>
+    <?php } ?>
+    <div style="clear: both;"></div>
+    <form action="<?php echo $this->url(array(), 'parcel_order', true); ?>" method="post" class="global_form" enctype="application/x-www-form-urlencoded" id="order_times_form">
+        <div class="element-group1">
+            <div id="collection_date-wrapper">
+                <div id="collection_date-label" style="float: left; line-height: 35px;">
+                    <?php echo $this->translate('Collection Date:'); ?>
+                </div>
+                <div id="collection_date-element" class="input-append" style="float: right; margin-top: 3px;">
+                    <input type="text" tabindex="1" id="collection_date" name="collection_date" value="<?php echo @$collection_date; ?>" style="width: 150px;" />
+                    <span class="add-on">
+                        <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                    </span>
+                </div>
+                <div style="clear: both;"></div>
+            </div>
+            <div style="line-height: 35px;">
+                <?php echo $this->translate('Choose Collection Time:'); ?>
+            </div>
+            <div id="ready_to_collect-wrapper">
+                <div id="ready_to_collect-label" style="line-height: 35px;">
+                    <input type="radio" tabindex="2" onclick="javascript:changeCollectionTime(this)" name="ctimetype" value="ready_to_collect" <?php if(@$ctimetype == 'ready_to_collect'){echo 'checked="checked"';} ?> />
+                    <input type="hidden" id="ready_to_collect" name="ready_to_collect" value="1" />
+                    <?php echo $this->translate('Ready Now'); ?>
+                </div>
+            </div>
+            <div id="collect_at-wrapper">
+                <div id="collect_at-label" style="float: left; margin-right: 10px; line-height: 35px;">
+                    <input type="radio" tabindex="3" onclick="javascript:changeCollectionTime(this)" name="ctimetype" value="collect_at" <?php if(@$ctimetype == 'collect_at'){echo 'checked="checked"';} ?> />
+                    <?php echo $this->translate('At'); ?>
+                </div>
+                <div id="collect_at-element" class="input-append" style="margin-top: 3px;">
+                    <input type="text" tabindex="4" id="collect_at" name="collect_at" value="<?php echo @$collect_at; ?>" style="width: 150px;" />
+                    <span class="add-on">
+                        <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                    </span>
+                </div>
+                <div style="clear: both;"></div>
+            </div>
+            <div id="collect_before-wrapper">
+                <div id="collect_before-label" style="float: left; margin-right: 10px; line-height: 35px;">
+                    <input type="radio" tabindex="5" onclick="javascript:changeCollectionTime(this)" name="ctimetype" value="collect_before" <?php if(@$ctimetype == 'collect_before'){echo 'checked="checked"';} ?> />
+                    <?php echo $this->translate('Before'); ?>
+                </div>
+                <div id="collect_before-element" class="input-append" style="margin-top: 3px;">
+                    <input type="text" tabindex="6" id="collect_before" name="collect_before" value="<?php echo @$collect_before; ?>" style="width: 150px;" />
+                    <span class="add-on">
+                        <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                    </span>
+                </div>
+                <div style="clear: both;"></div>
+            </div>
+            <div id="collect_between-wrapper">
+                <div id="collect_between-label" style="margin-bottom: 10px; margin-top: 5px;">
+                    <input type="radio" tabindex="7" onclick="javascript:changeCollectionTime(this)" name="ctimetype" value="collect_between" <?php if(@$ctimetype == 'collect_between'){echo 'checked="checked"';} ?> />
+                    <?php echo $this->translate('Between'); ?>
+                </div>
+                <div id="collect_between1-element" class="input-append" style="float: left; margin-right: 10px;">
+                    <input type="text" tabindex="8" id="collect_between1" name="collect_between[]" value="<?php echo @$collect_between[0]; ?>" style="width: 117px;" />
+                    <span class="add-on">
+                        <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                    </span>
+                </div>
+                <div id="collect_between2-element" class="input-append">
+                    <input type="text" tabindex="9" id="collect_between2" name="collect_between[]" value="<?php echo @$collect_between[1]; ?>" style="width: 117px;" />
+                    <span class="add-on">
+                        <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                    </span>
+                </div>
+                <div style="clear: both;"></div>
+            </div>
+        </div>
+        <div class="element-group2">
+            <div id="delivery_date-wrapper">
+                <div id="delivery_date-label" style="float: left; line-height: 35px;">
+                    <?php echo $this->translate('Delivery Date:'); ?>
+                </div>
+                <div id="delivery_date-element" class="input-append" style="float: right; margin-top: 3px;">
+                    <input type="text" tabindex="1" id="delivery_date" name="delivery_date" value="<?php echo @$delivery_date; ?>" style="width: 150px;" />
+                    <span class="add-on">
+                        <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                    </span>
+                </div>
+                <div style="clear: both;"></div>
+            </div>
+            <div style="line-height: 35px;">
+                <?php echo $this->translate('Choose Delivery Time:'); ?>
+            </div>
+            <div id="delivery_asap-wrapper">
+                <div id="delivery_asap-label" style="line-height: 35px;">
+                    <input type="radio" tabindex="2" onclick="javascript:changeDeliveryTime(this)" name="dtimetype" value="delivery_asap" <?php if(@$dtimetype == 'delivery_asap'){echo 'checked="checked"';} ?> />
+                    <input type="hidden" id="delivery_asap" name="delivery_asap" value="1" />
+                    <?php echo $this->translate('ASAP'); ?>
+                </div>
+            </div>
+            <div id="delivery_at-wrapper">
+                <div id="delivery_at-label" style="float: left; margin-right: 10px; line-height: 35px;">
+                    <input type="radio" tabindex="3" onclick="javascript:changeDeliveryTime(this)" name="dtimetype" value="delivery_at" <?php if(@$dtimetype == 'delivery_at'){echo 'checked="checked"';} ?> />
+                    <?php echo $this->translate('At'); ?>
+                </div>
+                <div id="delivery_at-element" class="input-append" style="margin-top: 3px;">
+                    <input type="text" tabindex="4" id="delivery_at" name="delivery_at" value="<?php echo @$delivery_at; ?>" style="width: 150px;" />
+                    <span class="add-on">
+                        <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                    </span>
+                </div>
+                <div style="clear: both;"></div>
+            </div>
+            <div id="delivery_before-wrapper">
+                <div id="delivery_before-label" style="float: left; margin-right: 10px; line-height: 35px;">
+                    <input type="radio" tabindex="5" onclick="javascript:changeDeliveryTime(this)" name="dtimetype" value="delivery_before" <?php if(@$dtimetype == 'delivery_before'){echo 'checked="checked"';} ?> />
+                    <?php echo $this->translate('Before'); ?>
+                </div>
+                <div id="delivery_before-element" class="input-append" style="margin-top: 3px;">
+                    <input type="text" tabindex="6" id="delivery_before" name="delivery_before" value="<?php echo @$delivery_before; ?>" style="width: 150px;" />
+                    <span class="add-on">
+                        <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                    </span>
+                </div>
+                <div style="clear: both;"></div>
+            </div>
+            <div id="delivery_between-wrapper">
+                <div id="delivery_between-label" style="margin-bottom: 10px; margin-top: 5px;">
+                    <input type="radio" tabindex="7" onclick="javascript:changeDeliveryTime(this)" name="dtimetype" value="delivery_between" <?php if(@$dtimetype == 'delivery_between'){echo 'checked="checked"';} ?> />
+                    <?php echo $this->translate('Between'); ?>
+                </div>
+                <div id="delivery_between1-element" class="input-append" style="float: left; margin-right: 10px;">
+                    <input type="text" tabindex="8" id="delivery_between1" name="delivery_between[]" value="<?php echo @$delivery_between[0]; ?>" style="width: 117px;" />
+                    <span class="add-on">
+                        <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                    </span>
+                </div>
+                <div id="delivery_between2-element" class="input-append">
+                    <input type="text" tabindex="9" id="delivery_between2" name="delivery_between[]" value="<?php echo @$delivery_between[1]; ?>" style="width: 117px;" />
+                    <span class="add-on">
+                        <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+                    </span>
+                </div>
+                <div style="clear: both;"></div>
+            </div>
+        </div>
+        <div class="element-group3">
+            <div id="resultPreview">
+                <div>
+                    <?php echo $this->translate('Collection Date:'); ?> 
+                    <span id="collectDatePan"><?php echo @$collection_date; ?></span>
+                </div>
+                <div>
+                    <?php echo $this->translate('Collection Time:'); ?> 
+                    <span id="collectTimePan">
+                        <?php 
+                            if(@is_array($collectionTimes)){
+                                echo $this->translate('%1$s And %2$s', @$collectionTimes[0], @$collectionTimes[1]);
+                            }else{
+                                if(@$ctimetype == 'ready_to_collect'){
+                                    echo $this->translate('Ready Now');
+                                }elseif(@$ctimetype == 'collect_at'){
+                                    echo $this->translate('At %1$s', @$collectionTimes);
+                                }elseif(@$ctimetype == 'collect_before'){
+                                    echo $this->translate('Before %1$s', @$collectionTimes);
+                                }
+                            } 
+                        ?>
+                    </span>
+                </div>
+                <div>
+                    <?php echo $this->translate('Delivery Date:'); ?> 
+                    <span id="deliveryDatePan"><?php echo @$delivery_date; ?></span>
+                </div>
+                <div>
+                    <?php echo $this->translate('Delivery Time:'); ?> 
+                    <span id="deliveryTimePan">
+                        <?php 
+                            if(@is_array($deliveryTimes)){
+                                echo $this->translate('%1$s And %2$s', @$deliveryTimes[0], @$deliveryTimes[1]);                            
+                            }else{
+                                if(@$dtimetype == 'delivery_asap'){
+                                    echo $this->translate('ASAP');
+                                }elseif(@$dtimetype == 'delivery_at'){
+                                    echo $this->translate('At %1$s', @$deliveryTimes);
+                                }elseif(@$dtimetype == 'delivery_before'){
+                                    echo $this->translate('Before %1$s', @$deliveryTimes);
+                                }
+                            } 
+                        ?>
+                    </span>
+                </div>
+            </div>
+            <button tabindex="10" type="submit" id="submit" name="submit">
+                <?php echo $this->translate('Proceed to Confirmation'); ?>
+            </button>
+        </div>
+        <div style="clear: both;"></div>
+    </form>
+</div>
+
+<script type="text/javascript">
+    var $varDeliveryTime = false;
+    var $varCollectionTime = false;
+    var $datePickerIds = '#collection_date-element, #delivery_date-element';
+    $($datePickerIds).datetimepicker({
+        pickTime: false,
+        format: 'yyyy-MM-dd'
+    });
+    
+    var $timePickerIds = '#collect_at-element, #collect_before-element, #collect_between1-element, #collect_between2-element, '
+                                  + '#delivery_at-element, #delivery_before-element, #delivery_between1-element, #delivery_between2-element'
+    
+    $($timePickerIds).datetimepicker({
+        pickDate: false,
+        format: 'hh:mm:ss',
+        pick12HourFormat: true
+    });
+    
+    $('#collection_date-element').on('changeDate', function(e) {
+        $('#collectDatePan').text($('#collection_date').val());
+    });    
+    $('#delivery_date-element').on('changeDate', function(e) {
+        $('#deliveryDatePan').text($('#delivery_date').val());
+    });    
+    
+    $('#collect_at-element').on('changeDate', function(e) {
+        if($varCollectionTime == 'collect_at'){
+            $('#collectTimePan').text('At '+$('#collect_at').val());
+        }
+    });    
+    $('#collect_before-element').on('changeDate', function(e) {
+        if($varCollectionTime == 'collect_before'){
+            $('#collectTimePan').text('Before '+$('#collect_before').val());
+        }
+    });    
+    $('#collect_between1-element').on('changeDate', function(e) {
+        if($varCollectionTime == 'collect_between'){
+            $('#collectTimePan').text('Between '+$('#collect_between1').val()+' And '+$('#collect_between2').val());
+        }
+    });    
+    $('#collect_between2-element').on('changeDate', function(e) {
+        if($varCollectionTime == 'collect_between'){
+            $('#collectTimePan').text('Between '+$('#collect_between1').val()+' And '+$('#collect_between2').val());
+        }
+    });    
+
+    $('#delivery_at-element').on('changeDate', function(e) {
+        if($varDeliveryTime == 'delivery_at'){
+            $('#deliveryTimePan').text('At '+$('#delivery_at').val());
+        }
+    });    
+    $('#delivery_before-element').on('changeDate', function(e) {
+        if($varDeliveryTime == 'delivery_before'){
+            $('#deliveryTimePan').text('Before '+$('#delivery_before').val());
+        }
+    });    
+    $('#delivery_between1-element').on('changeDate', function(e) {
+        if($varDeliveryTime == 'delivery_between'){
+            $('#deliveryTimePan').text('Between '+$('#delivery_between1').val()+' And '+$('#delivery_between2').val());
+        }
+    });    
+    $('#delivery_between2-element').on('changeDate', function(e) {
+        if($varDeliveryTime == 'delivery_between'){
+            $('#deliveryTimePan').text('Between '+$('#delivery_between1').val()+' And '+$('#delivery_between2').val());
+        }
+    });    
+
+    function changeCollectionTime($obj){
+        $('#collect_at').val('');
+        $('#collect_before').val('');
+        $('#collect_between1').val('');
+        $('#collect_between2').val('');
+        $varCollectionTime = $($obj).val();
+        if($varCollectionTime == 'ready_to_collect'){
+            $('#collectTimePan').text('Ready Now');
+        }
+    }
+    
+    function changeDeliveryTime($obj){
+        $('#delivery_at').val('');
+        $('#delivery_before').val('');
+        $('#delivery_between1').val('');
+        $('#delivery_between2').val('');
+        $varDeliveryTime = $($obj).val();
+        if($varDeliveryTime == 'delivery_asap'){
+            $('#deliveryTimePan').text('ASAP');
+        }
+    }
+</script>

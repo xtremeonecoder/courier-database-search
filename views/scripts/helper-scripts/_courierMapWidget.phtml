@@ -1,0 +1,206 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+?>
+
+<?php
+$apiKey = $this->apiKey;
+$paginator = $this->paginator;
+$formValues = $this->formValues;
+$itemPerPage = $this->itemPerPage;
+
+// auto google map css
+$this->headLink()
+        ->appendStylesheet("https://developers.google.com/maps/documentation/javascript/examples/default.css", 'screen', true, array('charset' => "utf-8"));
+
+// auto google map js
+$this->headScript()
+        ->appendFile("https://maps.googleapis.com/maps/api/js?key={$apiKey}");
+?>
+
+<script type="text/javascript">
+    var map; 
+    var infowindow = null;
+
+    /**
+     * Data for the markers consisting of a name, a LatLng and a zIndex for
+     * the order in which these markers should display on top of each
+     * other.
+     */
+    var beaches = [
+        <?php if(count($paginator)>0){ ?>
+            <?php 
+            $counter = 1;
+            foreach($paginator as $company){ ?>
+               ['<?php echo $company->getTitle(); ?>', <?php echo $company->getLatitude(); ?>, <?php echo $company->getLongitude(); ?>, <?php echo $counter; ?>]<?php if($itemPerPage > $counter){echo ',';} ?>
+            <?php
+            $counter++;
+            } ?>    
+        <?php } ?>
+    ];
+    var companies = [
+        <?php if(count($paginator)>0){ ?>
+            <?php 
+            $counter = 1;            
+            foreach($paginator as $company){ ?>
+               [
+                   "<?php echo $company->getHref(); ?>",
+                   "<?php echo $company->getTitle(); ?>",
+                   "<?php echo $company->getEmailHref(); ?>",
+                   "<?php echo $company->getWebsite(); ?>",
+                   "<?php echo $company->getMobileNo(); ?>",
+                   "<?php echo str_replace("\n", "", $company->getFullAddress()); ?>"
+               ]<?php if($itemPerPage > $counter){echo ',';} ?>
+            <?php
+            $counter++;
+            } ?>    
+        <?php } ?>
+    ];
+
+    // Marker sizes are expressed as a Size of X,Y
+    // where the origin of the image (0,0) is located
+    // in the top left of the image.
+
+    // Origins, anchor positions and coordinates of the marker
+    // increase in the X direction to the right and in
+    // the Y direction down.
+    var image = {
+        url: 'public/gmap-icons/point-image.png',
+        // This marker is 20 pixels wide by 32 pixels tall.
+        size: new google.maps.Size(48, 78),
+        // The origin for this image is 0,0.
+        origin: new google.maps.Point(0, 0),
+        // The anchor for this image is the base of the flagpole at 0,32.
+        anchor: new google.maps.Point(24, 78)
+    };
+    var shadow = {
+        url: 'public/gmap-icons/point-shadow.png',
+        // The shadow image is larger in the horizontal dimension
+        // while the position and offset are the same as for the main image.
+        size: new google.maps.Size(76, 79),
+        origin: new google.maps.Point(0, 0),
+        anchor: new google.maps.Point(24, 79)
+    };
+
+    // Shapes define the clickable region of the icon.
+    // The type defines an HTML &lt;area&gt; element 'poly' which
+    // traces out a polygon as a series of X,Y points. The final
+    // coordinate closes the poly by connecting to the first
+    // coordinate.
+    var shape = {
+        coord: [1, 1, 1, 79, 76, 79, 76 , 1],
+        type: 'poly'
+    };
+
+    // call initialize
+    function initialize() {
+        // set map options
+        var mapOptions = {
+            zoom: 6,
+            center: new google.maps.LatLng(54.737308, -2.596436),
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        }
+        
+        // set map
+        var map = new google.maps.Map(
+            document.getElementById('map_canvas'),
+            mapOptions
+        );
+
+        // set markers
+        setMarkers(map, beaches, companies);
+        
+        // set infowindow
+        infowindow = new google.maps.InfoWindow({
+            content: "loading..."
+        });        
+    }
+
+    function setMarkers(map, locations, companies) {
+        // Add markers to the map                
+        for (var i = 0; i < locations.length; i++) {
+            setMarker(map, locations[i], companies[i]);
+        }
+    }
+
+    // set individual marker
+    function setMarker(map, beach, company) {
+        // get location object
+        var myLatLng = new google.maps.LatLng(beach[1], beach[2]);
+        
+        // set info string
+        var contentString = "<h3>"+
+                                            "<a href='"+company[0]+"' style='color: #000; font-size: 18px;'>"+
+                                                "<i class='icon-shopping-cart' style='vertical-align:middle; margin-top: -2px;'></i>"+
+                                                company[1] +
+                                            "</a>"+
+                                        "</h3>"+
+                                        "<p>"+company[4]+"</p>"+
+                                        "<p>"+company[5]+"</p>"+
+                                        "<ul class='comnav'>";
+          
+        if(company[2] != ''){
+            contentString += "<li><a href='"+company[2]+"'><?php echo $this->translate('Email Us'); ?></a></li>";
+        }if(company[3] != ''){
+            contentString += "<li class='seperator'>|</li>"+
+            "<li><a href='"+company[3]+"' target='_blank'><?php echo $this->translate('Visit Website'); ?></a></li>";
+        }
+        contentString += "<li class='seperator'>|</li>"+
+                                    "<li><a href='"+company[0]+"'><?php echo $this->translate('Full Profile'); ?></a></li>"+
+                                    "<div style='clear: both;'></div>"+
+                                "</ul>";
+        // set marker                                
+        var marker = new google.maps.Marker({
+            position: myLatLng,
+            map: map,
+            //shadow: shadow,
+            //icon: image,
+            //shape: shape,
+            title: beach[0],
+            zIndex: beach[3]
+        });
+
+        // load infowindow on load
+        google.maps.event.addListener(marker, "click", function(){
+            infowindow.setContent(contentString);
+            infowindow.open(map, this);
+        });
+    }
+    
+    // call initialize
+    google.maps.event.addDomListener(window, 'load', initialize);
+</script>
+
+<?php if($paginator->getTotalItemCount() > $itemPerPage): ?>
+    <div class="toppaginator">
+        <?php echo $this->paginationControl($paginator, null, null, array(
+          'pageAsQuery' => true,
+          'query' => $formValues
+        )); ?>
+    </div>
+    <hr />
+<?php endif; ?>
+
+<div id="map_canvas" style="width: 100%; height: 750px;"></div>
+<div style="clear: both;"></div>
+<br />
+<?php if($paginator->getTotalItemCount() > $itemPerPage): ?>
+    <div class="toppaginator">
+        <?php echo $this->paginationControl($paginator, null, null, array(
+          'pageAsQuery' => true,
+          'query' => $formValues
+        )); ?>
+    </div>
+    <hr />
+<?php endif; ?>

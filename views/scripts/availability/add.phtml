@@ -1,0 +1,209 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+
+// datepicker css
+$this->headLink()
+          //->appendStylesheet("{$this->baseUrl()}/public/externals/datetimepicker/css/bootstrap-combined.min.css")
+          ->appendStylesheet("{$this->baseUrl()}/public/externals/datetimepicker/css/bootstrap-datetimepicker.min.css", 'screen', true, array('charset'=>"utf-8"));
+
+// datepicker js
+$this->headScript()
+          //->appendFile("{$this->baseUrl()}/public/externals/datetimepicker/js/jquery.min.js")
+          //->appendFile("{$this->baseUrl()}/public/externals/datetimepicker/js/bootstrap.min.js")
+          ->appendFile("{$this->baseUrl()}/public/externals/datetimepicker/js/bootstrap-datetimepicker.min.js");
+
+// auto suggest css
+$this->headLink()
+          ->appendStylesheet("{$this->baseUrl()}/public/js/autosuggest/css/autosuggest_inquisitor.css", 'screen', true, array('charset'=>"utf-8"));
+
+// auto suggest js
+$this->headScript()
+          ->appendFile("{$this->baseUrl()}/public/js/autosuggest/js/bsn.AutoSuggest_2.1.3_comp.js");
+          
+// menu          
+$menu = array('menu' => 'courier_top_menu');
+echo $this->topMenuWidget(array('headtitle' => 'Courier', 'menu' => $menu));
+?>
+
+<div id="formholder">
+    <h4>
+        <i class="icon-home" style="vertical-align:middle; margin-top: -2px;"></i>
+        <?php echo $this->translate('Courier Panel [Add Availability Schedule]'); ?>
+    </h4>
+
+    <div style="clear: both;"><br /></div>
+
+    <div class="span add-schedule-form" style="margin-left: 0px;">
+        <?php echo $this->form->render($this); ?>
+    </div>
+    <div style="clear: both;"></div>
+</div>
+
+<script type="text/javascript">
+    $('#submit').prepend("<i class='icon-plus-sign icon-white'></i> ");
+    $('#availability_date-element').addClass('input-append').css('display', 'block');
+    $('#from_time-element').addClass('input-append');
+    $('#to_time-element').addClass('input-append');
+    
+    var $iconHtml = '<span class="add-on">' +
+                              '<i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>' +
+                              '</span>';
+
+    // show datepicker
+    $('#availability_date-element').append($iconHtml);
+    var $datePickerIds = '#availability_date-element';
+    $($datePickerIds).datetimepicker({
+        pickTime: false,
+        format: 'yyyy-MM-dd'
+    });
+    
+    // show timepicker
+    var $timePickerIds = '#from_time-element, #to_time-element';
+    $('#from_time-element').append($iconHtml);
+    $('#to_time-element').append($iconHtml);
+    $($timePickerIds).datetimepicker({
+        pickDate: false,
+        format: 'hh:mm:ss',
+        pick12HourFormat: true
+    });
+
+    // code for auto suggest
+    var $fromTownOptions = {
+        script: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'get-town-list'), 'default', true); ?>?json=true&limit=6&",
+        varname: "input",
+        json: true,
+        shownoresults: false,
+        maxresults: 6,
+        callback: function ($obj) {
+            $('#from_town_id').val($obj.id);
+            
+            var $request = $.ajax({
+                url: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'get-town-details'), 'default', true); ?>",
+                type: "GET",
+                data: {id : $obj.id},
+                dataType: "json"
+            });
+            $request.done(function($result) {
+                if($result.status == 'success'){
+                    //$('#county').val($result.countyid);
+                    //$('#country').val($result.countryid);
+                    //$('#county_name').val($result.countyname);
+                    //$('#country_name').val($result.countryname);
+                }else{
+                    alert("<?php echo $this->translate('Request failed, something went wrong!'); ?>");
+                }
+            });
+            $request.fail(function(jqXHR, textStatus) {
+                alert("<?php echo $this->translate('Request failed: '); ?>" + textStatus);
+            });
+        }
+    };
+    var $toTownOptions = {
+        script: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'get-town-list'), 'default', true); ?>?json=true&limit=6&",
+        varname: "input",
+        json: true,
+        shownoresults: false,
+        maxresults: 6,
+        callback: function ($obj) {
+            $('#to_town_id').val($obj.id);
+            
+            var $request = $.ajax({
+                url: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'get-town-details'), 'default', true); ?>",
+                type: "GET",
+                data: {id : $obj.id},
+                dataType: "json"
+            });
+            $request.done(function($result) {
+                if($result.status == 'success'){
+                    //$('#county').val($result.countyid);
+                    //$('#country').val($result.countryid);
+                    //$('#county_name').val($result.countyname);
+                    //$('#country_name').val($result.countryname);
+                }else{
+                    alert("<?php echo $this->translate('Request failed, something went wrong!'); ?>");
+                }
+            });
+            $request.fail(function(jqXHR, textStatus) {
+                alert("<?php echo $this->translate('Request failed: '); ?>" + textStatus);
+            });
+        }
+    };
+    var $fromTownResult = new bsn.AutoSuggest('from_town_name', $fromTownOptions);
+    var $toTownResult = new bsn.AutoSuggest('to_town_name', $toTownOptions);
+    
+    // city / town validation
+    $('#from_town_name').blur(function(){
+        var $cityValidationRequest = $.ajax({
+            url: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'validate-city-name'), 'default', true); ?>",
+            type: "GET",
+            data: {city : $(this).val()},
+            dataType: "json",
+            beforeSend: function ( jqXHR ) {
+                $('#from_town_name').nextAll().remove();
+                var $loadingImage = $("<img src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/loading.gif' />");
+                $loadingImage.insertAfter($('#from_town_name'));
+            }
+        });
+        $cityValidationRequest.done(function($result) {
+            $('#from_town_name').nextAll().remove();
+            if($result.status == 'success'){
+                var $loadingImage = $("<img title='<?php echo $this->translate('Valid City Name'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/tick.png' />");
+                $('#from_town_name-element').append($loadingImage);
+            }else{
+                var $loadingImage = $(
+                    "<img title='<?php echo $this->translate('Invalid City Name'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />" +
+                    "<ul class='errors'><li><?php echo $this->translate('Please check spelling of Town/City as this does not exist.'); ?></li></ul>"
+                );
+                $('#from_town_name-element').append($loadingImage);
+            }
+        });
+        $cityValidationRequest.fail(function(jqXHR, textStatus) {
+            $('#from_town_name').nextAll().remove();
+            var $loadingImage = $("<img title='<?php echo $this->translate('Invalid City Name'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />");
+            $('#from_town_name-element').append($loadingImage);
+        });
+    });            
+    $('#to_town_name').blur(function(){
+        var $cityValidationRequest = $.ajax({
+            url: "<?php echo $this->url(array('controller' => 'ajax', 'action' => 'validate-city-name'), 'default', true); ?>",
+            type: "GET",
+            data: {city : $(this).val()},
+            dataType: "json",
+            beforeSend: function ( jqXHR ) {
+                $('#to_town_name').nextAll().remove();
+                var $loadingImage = $("<img src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/loading.gif' />");
+                $loadingImage.insertAfter($('#to_town_name'));
+            }
+        });
+        $cityValidationRequest.done(function($result) {
+            $('#to_town_name').nextAll().remove();
+            if($result.status == 'success'){
+                var $loadingImage = $("<img title='<?php echo $this->translate('Valid City Name'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/tick.png' />");
+                $('#to_town_name-element').append($loadingImage);
+            }else{
+                var $loadingImage = $(
+                    "<img title='<?php echo $this->translate('Invalid City Name'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />" +
+                    "<ul class='errors'><li><?php echo $this->translate('Please check spelling of Town/City as this does not exist.'); ?></li></ul>"
+                );
+                $('#to_town_name-element').append($loadingImage);
+            }
+        });
+        $cityValidationRequest.fail(function(jqXHR, textStatus) {
+            $('#to_town_name').nextAll().remove();
+            var $loadingImage = $("<img title='<?php echo $this->translate('Invalid City Name'); ?>' src='<?php echo $this->baseUrl(); ?>/public/themes/default/img/cross.png' />");
+            $('#to_town_name-element').append($loadingImage);
+        });
+    });            
+</script>

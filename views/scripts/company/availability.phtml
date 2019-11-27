@@ -1,0 +1,123 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+
+$paginator = $this->paginator;
+?>
+
+<style type="text/css">
+    .comnav {margin-left: 0px;}
+    .comnav > li {float: left; list-style: none;}
+    .comnav > li.seperator {padding: 0px 5px 0px 5px;}
+    form#filter_form label {display: none;}
+    .toppaginator > .pagination {margin-top: 0px;}
+</style>
+
+<div>
+    <?php 
+        $menu = array('menu' => 'top_menu');
+        $notShow = array();
+        //$notShow = array('top_menu_courier_search');
+        echo $this->topMenuWidget(array('headtitle' => 'List View', 'menu' => $menu, 'notshow' => $notShow));
+    ?>
+    
+    <div style="clear: both;"></div>
+    
+    <div class="span" style="margin-left: 0px;">
+        <?php echo $this->filterWidget(); ?>
+    </div>
+    
+    <div class="span" style="margin-left: 0px;">
+        <?php if(count($paginator)>0){ ?>
+        
+            <?php if($paginator->getTotalItemCount() > $this->itemPerPage): ?>
+                <div class="toppaginator">
+                    <?php echo $this->paginationControl($paginator, null, null, array(
+                      'pageAsQuery' => true,
+                      'query' => $this->formValues
+                    )); ?>
+                </div>
+                <hr />
+            <?php endif; ?>
+        
+            <?php foreach($paginator as $item){ 
+                $company = $item->getCompany();
+                ?>
+                <p>
+                    <?php 
+                        $toTime = @date('h:i A', strtotime($item->getToTime()));
+                        $fromTime = @date('h:i A', strtotime($item->getFromTime()));
+                        $availableDate = @date('l, jS F, Y', strtotime($item->getAvailabilityDate()));
+                        echo $this->translate(
+                                '%1$s from %2$s to %3$s',
+                                "<strong>{$availableDate}</strong>",
+                                "<strong>{$fromTime}</strong>",
+                                "<strong>{$toTime}</strong>"
+                        );
+                    ?>
+                </p>
+                <p>
+                    <?php 
+                        echo $this->translate(
+                                'In %1$s heading towards %2$s',
+                                "<strong>{$item->getFromTown()->getTitle()} {$item->getFromPostcode()}</strong>",
+                                "<strong>{$item->getToTown()->getTitle()} {$item->getToPostcode()}</strong>"
+                        );
+                    ?>
+                </p>
+                <p>
+                    <?php 
+                        echo $this->translate(
+                                'In %1$s',
+                                "<strong>{$item->getVehicle()->getMake()} {$item->getVehicle()->getModel()}</strong>"
+                        );
+                    ?>
+                </p>
+                <br />
+                <h5>
+                    <a href="<?php echo $company->getHref(); ?>">
+                        <i class="icon-shopping-cart" style="vertical-align:middle; margin-top: -2px;"></i>
+                        <?php echo $company->getTitle(); ?>
+                    </a>
+                </h5>
+                <p><?php echo $company->getMobileNo(); ?></p>
+                <p><?php echo $company->getFullAddress(); ?></p>
+                <ul class="comnav">
+                    <?php if($company->getEmail()){ ?>
+                    <li><a href="<?php echo $company->getEmailHref(); ?>"><?php echo $this->translate('Email Us'); ?></a></li>
+                    <?php }if($company->getWebsite()){ ?>
+                    <li class="seperator">|</li>
+                    <li><a href="<?php echo $company->getWebsite(); ?>" target="_blank"><?php echo $this->translate('Visit Website'); ?></a></li>
+                    <?php } ?>
+                    <li class="seperator">|</li>
+                    <li><a href="<?php echo $company->getHref(); ?>"><?php echo $this->translate('Full Profile'); ?></a></li>
+                    <div style="clear: both;"></div>
+                </ul>
+                <hr />
+            <?php } ?>
+            
+            <?php if($paginator->getTotalItemCount() > $this->itemPerPage): ?>
+                <div class="botpaginator">
+                    <?php echo $this->paginationControl($paginator, null, null, array(
+                      'pageAsQuery' => true,
+                      'query' => $this->formValues
+                    )); ?>
+                </div>
+            <?php endif; ?>
+            
+        <?php }else{ ?>
+            <p><?php echo $this->translate('Sorry, no couriers found in database!'); ?></p>
+        <?php } ?>
+    </div>
+</div>

@@ -1,0 +1,180 @@
+<?php
+/**
+ * Search Engine for Finding Courier Services
+ *
+ * @category   Application_Core
+ * @package    courier-search-engine
+ * @author     Suman Barua
+ * @developer  Suman Barua <sumanbarua576@gmail.com>
+ */
+
+/**
+ * @category   Application_Core
+ * @package    courier-search-engine
+ */
+?>
+
+<?php 
+$timeTitles = $this->timeTitles;
+$quoteTitles = $this->quoteTitles;
+$deliveryTitles = $this->deliveryTitles;
+$collectionTitles = $this->collectionTitles;
+$orderTimes = $this->orderTimes;
+$orderQuote = $this->orderQuote;
+$orderDelivery = $this->orderDelivery;
+$orderCollection = $this->orderCollection;
+?>
+
+<style type="text/css">
+    td, th {font-size: 15px; font-weight: bold; width: 50%;}
+</style>
+
+<div class="section current">
+    <ul class="progress-steps">
+        <li><a href="javascript:void(0)"><?php echo $this->translate('Collection Details'); ?></a></li>
+        <li>&blacksquare;</li>
+        <li><a href="javascript:void(0)"><?php echo $this->translate('Delivery Details'); ?></a></li>
+        <li>&blacksquare;</li>
+        <li><a href="javascript:void(0)"><?php echo $this->translate('Pick/Drop Times'); ?></a></li>
+        <li>&blacksquare;</li>
+        <li><a href="javascript:void(0)" class="processing"><?php echo $this->translate('Confirmation'); ?></a></li>
+        <li>&blacksquare;</li>
+        <li><a href="javascript:void(0)"><?php echo $this->translate('Payment'); ?></a></li>
+        <div style="clear: both;"></div>
+    </ul>
+    
+    <div style="clear: both;"></div>
+    
+    <h2 style="font-size: 22px; padding-left: 43px; margin-bottom: 30px;">
+        <?php echo $this->translate('Please check carefully the details below to ensure an error free delivery...'); ?>
+    </h2>
+    
+    <div style="clear: both;"></div>
+    
+    <?php if($orderQuote->finished): ?>
+    <table>
+        <tbody>
+            <tr>
+                <td colspan="2">
+                    <h2><?php echo $this->translate('Parcel Details'); ?></h2>
+                </td>
+            </tr>
+            <?php foreach($orderQuote->data as $key => $value): ?>
+                <?php if(is_array($value)){ ?>
+                    <?php if($key == 'duration'){continue;} ?>
+                    <tr>
+                        <td><?php echo $this->translate($quoteTitles['miles']); ?></td>
+                        <td><?php echo $this->translate('%1$s Mile(s)', $value['miles']); ?></td>
+                    </tr>
+                    <tr>
+                        <td><?php echo $this->translate($quoteTitles['charge']); ?></td>
+                        <td><?php echo $this->translate('%1$s GBP', $value['charge']); ?></td>
+                    </tr>
+                <?php }else{ ?>
+                    <tr>
+                        <td><?php echo $this->translate($quoteTitles[$key]); ?></td>
+                        <td><?php echo $value; ?></td>
+                    </tr>
+                <?php } ?>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    <?php endif; ?>
+    
+    <div style="clear: both;"><br /><br /></div>
+    
+    <?php if($orderCollection->finished): ?>
+    <table>
+        <tbody>
+            <tr>
+                <td colspan="2">
+                    <h2 style="float: left;"><?php echo $this->translate('Collection Details'); ?></h2>
+                    <a href="<?php echo $this->url(array('edit' => 1), 'parcel_order', true); ?>" style="float: right;">
+                        <?php echo $this->translate('Edit Information'); ?>
+                    </a>
+                </td>
+            </tr>
+            <?php foreach($orderCollection->data as $key => $value): ?>
+            <tr>
+                <td><?php echo $this->translate($collectionTitles[$key]); ?></td>
+                <td><?php echo $value; ?></td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    <?php endif; ?>
+    
+    <div style="clear: both;"><br /><br /></div>
+    
+    <?php if($orderDelivery->finished): ?>
+    <table>
+        <tbody>
+            <tr>
+                <td colspan="2">
+                    <h2 style="float: left;"><?php echo $this->translate('Delivery Details'); ?></h2>
+                    <a href="<?php echo $this->url(array('edit' => 2), 'parcel_order', true); ?>" style="float: right;">
+                        <?php echo $this->translate('Edit Information'); ?>
+                    </a>
+                </td>
+            </tr>
+            <?php foreach($orderDelivery->data as $key => $value): ?>
+            <tr>
+                <td><?php echo $this->translate($deliveryTitles[$key]); ?></td>
+                <td><?php echo $value; ?></td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    <?php endif; ?>
+    
+    <div style="clear: both;"><br /><br /></div>
+    
+    <?php if($orderTimes->finished): ?>
+    <table>
+        <tbody>
+            <tr>
+                <td colspan="2" align="center">
+                    <h2 style="float: left;"><?php echo $this->translate('Pick / Drop Times'); ?></h2>
+                    <a href="<?php echo $this->url(array('edit' => 3), 'parcel_order', true); ?>" style="float: right;">
+                        <?php echo $this->translate('Edit Information'); ?>
+                    </a>
+                </td>
+            </tr>
+            <?php foreach($orderTimes->data as $key => $value): ?>
+            <tr>
+                <td><?php echo $this->translate($timeTitles[$key]); ?></td>
+                <td>
+                    <?php 
+                        if(is_array($value)){
+                            echo $this->translate('Between %1$s And %2$s', $value[0], $value[1]);
+                        }elseif($key == 'ready_to_collect'){
+                            echo $this->translate('Ready Now');
+                        }elseif($key == 'collect_at'){
+                            echo $this->translate('At %1$s', $value);
+                        }elseif($key == 'collect_before'){
+                            echo $this->translate('Before %1$s', $value);
+                        }elseif($key == 'delivery_asap'){
+                            echo $this->translate('ASAP');
+                        }elseif($key == 'delivery_at'){
+                            echo $this->translate('At %1$s', $value);
+                        }elseif($key == 'delivery_before'){
+                            echo $this->translate('Before %1$s', $value);
+                        }else{
+                            echo $value;
+                        } 
+                    ?>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    <?php endif; ?>
+    
+    <div style="clear: both;"><br /><br /></div>
+    <form action="<?php echo $this->url(array(), 'parcel_order', true); ?>" method="post" class="global_form" enctype="application/x-www-form-urlencoded" id="order_times_form">
+        <input type="hidden" name="save" value="save" />
+        <button type="submit" id="submit" name="submit" style="float: right;">
+            <?php echo $this->translate('Save & Proceed to Payment'); ?>
+        </button>
+    </form>
+</div>
